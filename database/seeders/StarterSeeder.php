@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use Illuminate\Database\Seeder;
 use App\Models\Branch;
 use App\Models\Department;
 use App\Models\Employee;
@@ -12,7 +13,6 @@ use App\Models\Globals;
 use App\Models\Manager;
 use App\Models\Position;
 use App\Models\Shift;
-use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
 
 class StarterSeeder extends Seeder
@@ -51,7 +51,7 @@ class StarterSeeder extends Seeder
             'phone' => '0123456789',
             'national_id' => '900101145512',
             'hired_on' => '2023-01-25',
-            'password' => '$2y$10$7BMn8WlpLkUB64fCCCVCvuFbqp4dO34dLL/a7MjMdoITz0FOIOZ.G',
+            'password' => bcrypt('password'),
             'branch_id' => 1,
             'department_id' => 1,
         ]);
