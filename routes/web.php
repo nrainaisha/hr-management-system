@@ -53,6 +53,11 @@ Route::group(['middleware' => ['role:admin', 'auth']], function () {
     Route::get('schedule', [\App\Http\Controllers\ScheduleController::class, 'admin'])->name('schedule.admin');
     Route::get('schedule/weekly', [\App\Http\Controllers\ScheduleController::class, 'weekly'])->name('schedule.weekly');
 
+    // Schedule API routes
+    Route::post('schedule/assign', [\App\Http\Controllers\ScheduleController::class, 'assign'])->name('schedule.assign');
+    Route::get('schedule/week', [\App\Http\Controllers\ScheduleController::class, 'week'])->name('schedule.week');
+    Route::post('schedule/reset', [\App\Http\Controllers\ScheduleController::class, 'reset'])->name('schedule.reset');
+
 });
 
 

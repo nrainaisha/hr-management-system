@@ -1,21 +1,30 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import dayjs from 'dayjs';
 import Card from '@/Components/Card.vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head } from '@inertiajs/vue3';
+import axios from 'axios';
 
-// Mock staff data
-const staffList = [
-  { id: 1, name: 'Alice' },
-  { id: 2, name: 'Bob' },
-  { id: 3, name: 'Charlie' },
-];
+const props = defineProps({
+  staffList: {
+    type: Array,
+    default: () => [],
+  },
+  leaveList: {
+    type: Array,
+    default: () => [],
+  }
+});
+
+console.log('staffList:', props.staffList);
 
 const shiftNames = ['Morning', 'Evening'];
 
 // State for the selected week (start on Monday)
-const currentMonday = ref(dayjs().startOf('week').add(1, 'day'));
+const today = dayjs();
+const thisMonday = today.startOf('week').add(1, 'day');
+const currentMonday = ref(today.isBefore(thisMonday, 'day') ? thisMonday : thisMonday.add(7, 'day'));
 
 // State for the selected day and shift
 const selectedDay = ref(null);
@@ -26,6 +35,20 @@ const isValidating = ref(false);
 
 // Assignments: Each day holds two shifts, each shift holds staffId or null
 const assignments = ref({});
+
+// Local state for the modal selection
+const selectedStaffId = ref('');
+
+// Fetch assignments for the current week from backend
+async function fetchAssignments() {
+  const weekStart = currentMonday.value.format('YYYY-MM-DD');
+  const { data } = await axios.get('/schedule/week', { params: { week_start: weekStart } });
+  assignments.value = data.assignments || {};
+}
+
+// Fetch assignments on page load and when week changes
+onMounted(fetchAssignments);
+watch(currentMonday, fetchAssignments);
 
 // Calculate the days for the selected week
 const weekDays = computed(() => {
@@ -39,6 +62,7 @@ function openDayModal(day, shiftIdx) {
   if (!assignments.value[day.format('YYYY-MM-DD')]) {
     assignments.value[day.format('YYYY-MM-DD')] = [null, null];
   }
+  selectedStaffId.value = assignments.value[day.format('YYYY-MM-DD')][shiftIdx] || '';
 }
 
 // Close modal
@@ -48,45 +72,89 @@ function closeDayModal() {
   selectedShiftIdx.value = null;
 }
 
-// Assign staff to a shift with loading animation
-function assignStaff(staffId) {
+// Assign staff to a shift with loading animation and backend call
+async function assignStaff() {
   isValidating.value = true;
-  setTimeout(() => {
-    assignments.value[selectedDay.value.format('YYYY-MM-DD')][selectedShiftIdx.value] = staffId;
+  await new Promise(resolve => setTimeout(resolve, 1000));
+
+  const staffId = selectedStaffId.value;
+  const dayKey = selectedDay.value.format('YYYY-MM-DD');
+  const weekStart = currentMonday.value.format('YYYY-MM-DD');
+
+  // 1. Check if staff is on leave that day
+  // leaveList should be an array of { employee_id, date }
+  if (props.leaveList && props.leaveList.some(l => l.employee_id == staffId && l.date === dayKey)) {
     isValidating.value = false;
-    closeDayModal();
-  }, 1000); // Simulate 1 second validation
+    alert('This staff is on leave for the selected day. Please pick another staff.');
+    return;
+  }
+
+  // 2. Check if staff is already assigned to another shift on the same day
+  const assignmentsForDay = assignments.value[dayKey] || [null, null];
+  if (assignmentsForDay.includes(staffId)) {
+    isValidating.value = false;
+    alert('This staff is already assigned to another shift on this day. Please pick another staff.');
+    return;
+  }
+
+  // 3. Check if staff is assigned to more than 6 days in the week
+  let daysAssigned = 0;
+  for (const [date, shifts] of Object.entries(assignments.value)) {
+    if (date >= weekStart && date <= dayjs(weekStart).add(6, 'day').format('YYYY-MM-DD')) {
+      if (shifts.includes(staffId)) daysAssigned++;
+    }
+  }
+  if (daysAssigned >= 6) {
+    isValidating.value = false;
+    alert('This staff is already assigned to 6 days in this week. Please pick another staff.');
+    return;
+  }
+
+  // If all checks pass, proceed to save
+  await axios.post('/schedule/assign', {
+    employee_id: staffId,
+    shift_type: shiftNames[selectedShiftIdx.value].toLowerCase(),
+    week_start: weekStart,
+    day: dayKey,
+  });
+  await fetchAssignments();
+  isValidating.value = false;
+  closeDayModal();
 }
 
 // Navigate to previous week
 function prevWeek() {
   currentMonday.value = currentMonday.value.subtract(1, 'week');
+  fetchAssignments();
 }
 
 // Navigate to next week
 function nextWeek() {
   currentMonday.value = currentMonday.value.add(1, 'week');
+  fetchAssignments();
 }
 
 // Submit the schedule
 function submitSchedule() {
-  let hasError = false;
-  Object.values(assignments.value).forEach(day => {
-    day.forEach(shift => {
-      if (!shift) hasError = true;
-    });
-  });
-  if (hasError) {
-    alert('Please assign staff to all shifts before submitting.');
+  //If today is not Sunday (the day before the selected week starts), show an alert
+  //"Supervisor can only submit the schedule one day before the week starts (on Sunday)."
+  const today = dayjs();
+  const nextMonday = currentMonday.value;
+  const sundayBeforeWeek = nextMonday.subtract(1, 'day');
+  //Only allow submit if today is the Sunday before the selected week
+  if (!today.isSame(sundayBeforeWeek, 'day')) {
+    alert('Supervisor can only submit the schedule one day before the week starts (on Sunday).');
     return;
   }
-  alert('Weekly schedule submitted!');
+  alert('Weekly schedule submitted successfully!');
+  // Move to next week
+  currentMonday.value = currentMonday.value.add(7, 'day');
 }
 
 // Get staff name for a shift
 function getStaffName(day, shiftIdx) {
   const staffId = assignments.value[day.format('YYYY-MM-DD')]?.[shiftIdx];
-  const staff = staffList.find(s => s.id === staffId);
+  const staff = props.staffList.find(s => s.id == staffId);
   return staff ? staff.name : '';
 }
 
@@ -95,14 +163,16 @@ function isShiftAssigned(day, shiftIdx) {
   return !!assignments.value[day.format('YYYY-MM-DD')]?.[shiftIdx];
 }
 
-const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-const selectedWeek = ref(new Date());
-
-const changeWeek = (direction) => {
-    const newDate = new Date(selectedWeek.value);
-    newDate.setDate(newDate.getDate() + (direction === 'next' ? 7 : -7));
-    selectedWeek.value = newDate;
-};
+// Reset all assignments for the current week
+async function resetAssignments() {
+  if (!confirm('Are you sure you want to reset all assignments for this week?')) return;
+  // Optionally, call backend to delete all assignments for this week
+  await axios.post('/schedule/reset', {
+    week_start: currentMonday.value.format('YYYY-MM-DD'),
+  });
+  assignments.value = {};
+  await fetchAssignments();
+}
 </script>
 
 <template>
@@ -117,9 +187,9 @@ const changeWeek = (direction) => {
           <Card class="!mt-0 flex-1 flex flex-col">
             <!-- Week Selector -->
             <div class="flex justify-between items-center px-6 pt-6 pb-2">
-              <button @click="changeWeek('prev')" class="bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded shadow-sm transition">Previous</button>
+              <button @click="prevWeek" class="bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded shadow-sm transition">Previous</button>
               <span class="font-semibold text-lg">{{ currentMonday.format('MMM D, YYYY') }} - {{ currentMonday.add(6, 'day').format('MMM D, YYYY') }}</span>
-              <button @click="changeWeek('next')" class="bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded shadow-sm transition">Next</button>
+              <button @click="nextWeek" class="bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded shadow-sm transition">Next</button>
             </div>
             <!-- Vertical Week View -->
             <div class="flex-1 flex flex-col justify-center px-6 pb-6">
@@ -160,8 +230,9 @@ const changeWeek = (direction) => {
                   </tr>
                 </tbody>
               </table>
-              <!-- Submit Button -->
-              <div class="flex justify-end mt-8">
+              <!-- Submit and Reset Buttons -->
+              <div class="flex justify-end mt-8 space-x-4">
+                <button @click="resetAssignments" class="bg-gradient-to-r from-red-500 to-red-700 text-white px-8 py-2 rounded-lg shadow hover:from-red-600 hover:to-red-800 transition font-semibold text-base">Reset</button>
                 <button @click="submitSchedule" class="bg-gradient-to-r from-purple-500 to-purple-700 text-white px-8 py-2 rounded-lg shadow hover:from-purple-600 hover:to-purple-800 transition font-semibold text-base">Submit Weekly Schedule</button>
               </div>
             </div>
@@ -186,15 +257,21 @@ const changeWeek = (direction) => {
                 <div v-else class="mb-6">
                   <label class="block text-sm font-semibold mb-2 text-gray-700">Select Staff</label>
                   <select
-                    v-model="assignments[selectedDay.format('YYYY-MM-DD')][selectedShiftIdx]"
-                    @change="assignStaff(assignments[selectedDay.format('YYYY-MM-DD')][selectedShiftIdx])"
+                    v-model="selectedStaffId"
                     class="border-2 border-purple-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 rounded-lg px-3 py-2 w-full text-base transition shadow-sm outline-none"
                     :disabled="isValidating"
                     autofocus
                   >
                     <option value="">Select Staff</option>
-                    <option v-for="staff in staffList" :key="staff.id" :value="staff.id">{{ staff.name }}</option>
+                    <option v-for="staff in props.staffList" :key="staff.id" :value="staff.id">{{ staff.name }}</option>
                   </select>
+                  <button
+                    class="w-full bg-purple-600 text-white font-semibold py-2 rounded-lg mt-4"
+                    @click="assignStaff"
+                    :disabled="isValidating || !selectedStaffId"
+                  >
+                    Assign
+                  </button>
                 </div>
                 <button @click="closeDayModal" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 rounded-lg transition" :disabled="isValidating">Cancel</button>
               </div>
