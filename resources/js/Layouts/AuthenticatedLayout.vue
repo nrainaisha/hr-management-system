@@ -48,17 +48,17 @@ function changeLanguage(locale){
            :class="$page.props.locale == 'ar' ? 'right-0' : 'left-0'"
            aria-label="Sidebar">
         <div
-            class="h-full px-3 py-4 overflow-y-auto border-r flex flex-col justify-between dark:bg-gray-800 dark:border-gray-800">
+            class="h-full px-3 py-4 overflow-y-auto border-r flex flex-col justify-between dark:bg-gray-800 dark:border-gray-800" style="background: #1c1515;">
             <ul v-if="$page.props.auth.user.roles.includes('admin')" class="space-y-2 font-medium mb-4">
                 <div class="flex flex-row items-center">
-                    <div class="bg-purple-500 h-px flex-grow"></div>
-                    <div class=" px-2">{{__('Admin Tools')}}</div>
-                    <div class="bg-purple-500 h-px flex-grow"></div>
+                    <div class="bg-red-500 h-px flex-grow"></div>
+                    <div class=" px-2 text-white">{{__('Admin Tools')}}</div>
+                    <div class="bg-red-500 h-px flex-grow"></div>
                 </div>
 
-                <SidebarListItem :item-name="__('My Dashboardd')" :hasBadge="false" link="dashboard.index"
+                <SidebarListItem :item-name="__('My Dashboard')" :hasBadge="false" link="dashboard.index"
                                  :active-links="['dashboard.index']">
-                    <RocketIcon class="text-gray-500 dark:text-gray-100"/>
+                    <RocketIcon class="text-gray-100"/>
                 </SidebarListItem>
 
                 <SidebarListItem :item-name="__('Employees')" :hasBadge="true" badge="number"
@@ -92,9 +92,9 @@ function changeLanguage(locale){
 
             <ul v-else class="space-y-2 font-medium mb-4">
                 <div class="flex flex-row items-center">
-                    <div class="bg-purple-500 h-px flex-grow"></div>
+                    <div class="bg-red-500 h-px flex-grow"></div>
                     <div class=" px-2">{{__('My Services')}}</div>
-                    <div class="bg-purple-500 h-px flex-grow"></div>
+                    <div class="bg-red-500 h-px flex-grow"></div>
                 </div>
                 <SidebarListItem :item-name="__('My Dashboard')" :hasBadge="false" link="dashboard.index"
                                  :active-links="['dashboard.index']">
@@ -131,7 +131,7 @@ function changeLanguage(locale){
 
     <div :class="$page.props.locale === 'ar' ? 'sm:mr-64' : 'sm:ml-64'">
         <div>
-            <div class="min-h-screen bg-gray-100 dark:bg-gray-900">
+            <div class="min-h-screen" style="background: linear-gradient(to bottom, #1c1515, #6e0000); padding: 1rem;">
                 <nav class=" border-b border-gray-300 dark:border-gray-600">
 
                     <!-- Primary Navigation Menu -->
@@ -146,7 +146,7 @@ function changeLanguage(locale){
 
                             <div class="hidden sm:flex sm:items-center sm:ml-6">
                                 <!-- Dark mode Switcher & Settings Dropdown -->
-                                <button
+                                <!-- <button
                                     @click="toggleDark()"
                                     type="button"
                                     class="text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700
@@ -179,7 +179,7 @@ function changeLanguage(locale){
                                             clip-rule="evenodd"
                                         ></path>
                                     </svg>
-                                </button>
+                                </button> -->
                                 <div class="ml-3 relative !flex">
                                     <Dropdown align="right" width="48">
                                         <template #trigger>
