@@ -57,6 +57,17 @@ Route::group(['middleware' => ['role:admin', 'auth']], function () {
     Route::post('schedule/assign', [\App\Http\Controllers\ScheduleController::class, 'assign'])->name('schedule.assign');
     Route::get('schedule/week', [\App\Http\Controllers\ScheduleController::class, 'week'])->name('schedule.week');
     Route::post('schedule/reset', [\App\Http\Controllers\ScheduleController::class, 'reset'])->name('schedule.reset');
+    Route::get('schedule/assign-task', [\App\Http\Controllers\ScheduleController::class, 'assignTask'])->name('schedule.assign-task');
+    Route::post('schedule/submit-week', [\App\Http\Controllers\ScheduleController::class, 'submitWeek'])->name('schedule.submit-week');
+
+    // Task API routes
+    Route::get('tasks', [\App\Http\Controllers\TaskController::class, 'index'])->name('tasks.index');
+    Route::post('tasks', [\App\Http\Controllers\TaskController::class, 'store'])->name('tasks.store');
+    Route::put('tasks/{id}', [\App\Http\Controllers\TaskController::class, 'update'])->name('tasks.update');
+    Route::delete('tasks/{id}', [\App\Http\Controllers\TaskController::class, 'destroy'])->name('tasks.destroy');
+
+    // New route
+    Route::get('schedule/day', [\App\Http\Controllers\ScheduleController::class, 'day'])->name('schedule.day');
 
 });
 
@@ -76,10 +87,16 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('my-schedule', [\App\Http\Controllers\ScheduleController::class, 'employee'])
         ->middleware('role:employee')
         ->name('schedule.employee');
+    Route::get('my-schedule/week', [\App\Http\Controllers\ScheduleController::class, 'myWeek'])->name('my-schedule.week');
+    Route::get('my-schedule/view-task', [\App\Http\Controllers\ScheduleController::class, 'viewTask'])
+        ->middleware('role:employee')
+        ->name('schedule.view-task');
 
     Route::get('my-attendance', [\App\Http\Controllers\AttendanceController::class, 'attendanceDashboard'])->name('attendance.dashboard');
     Route::post('attendance/signin', [\App\Http\Controllers\AttendanceController::class, 'dashboardSignInAttendance'])->name('attendance.dashboardSignIn');
     Route::post('attendance/signoff', [\App\Http\Controllers\AttendanceController::class, 'dashboardSignOffAttendance'])->name('attendance.dashboardSignOff');
+
+    Route::get('my-tasks/day', [\App\Http\Controllers\TaskController::class, 'myTasksForDay'])->middleware('auth');
 
 });
 

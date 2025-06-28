@@ -46,7 +46,7 @@ const submit = () => {
                 Test Data.
             </div>
             <div class="flex flex-col justify-center mb-4 text-sm">
-                <p class="mb-2">Admin -> email: '<b>ahmad@myhrsolutions.my</b>' Password: '<b>password</b>' </p>
+                <p class="mb-2">Admin -> email: '<b>amirhakim@myhrsolutions.my</b>' Password: '<b>password</b>' </p>
                 <p class="mb-2">Employee -> email: '<b>aisyah@myhrsolutions.my</b>' Password: '<b>password</b>' </p>
             </div>
             <div>
