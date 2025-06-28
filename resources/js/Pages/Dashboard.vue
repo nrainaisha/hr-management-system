@@ -143,7 +143,7 @@ onMounted(() => {
                             </PrimaryButton>
                         </form>
                         <PrimaryButton v-else
-                                       class="w-full h-full flex justify-center !border-0 bg-gradient-to-r from-green-500 to-green-400 cursor-not-allowed"
+                                       class="w-full h-full flex justify-center !border-0 bg-red-600 cursor-not-allowed"
                                        disabled>
                             <span v-if="is_today_off" class="text-sm">{{ __('Today is off! 🕺🕺') }}<br></span>
                             <span v-else class="text-sm">{{ __('Attendance Taken Today! 🎉') }}<br></span>

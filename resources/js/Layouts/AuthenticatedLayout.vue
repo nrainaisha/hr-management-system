@@ -48,7 +48,11 @@ function changeLanguage(locale){
            :class="$page.props.locale == 'ar' ? 'right-0' : 'left-0'"
            aria-label="Sidebar">
         <div
-            class="h-full px-3 py-4 overflow-y-auto border-r flex flex-col justify-between dark:bg-gray-800 dark:border-gray-800" style="background: #1c1515;">
+            class="h-full px-3 py-4 overflow-y-auto border-r flex flex-col center dark:bg-gray-800 dark:border-gray-800" style="background: #1c1515;">
+            <!-- Logo at the top -->
+            <div class="flex flex-col items-center  mt-2">
+                <img src="/images/gymlogo.png" alt="Gym Logo" class="h-25 object-contain" />
+            </div>
             <ul v-if="$page.props.auth.user.roles.includes('admin')" class="space-y-2 font-medium mb-4">
                 <div class="flex flex-row items-center">
                     <div class="bg-red-500 h-px flex-grow"></div>
@@ -91,11 +95,6 @@ function changeLanguage(locale){
             </ul>
 
             <ul v-else class="space-y-2 font-medium mb-4">
-                <div class="flex flex-row items-center">
-                    <div class="bg-red-500 h-px flex-grow"></div>
-                    <div class=" px-2">{{__('My Services')}}</div>
-                    <div class="bg-red-500 h-px flex-grow"></div>
-                </div>
                 <SidebarListItem :item-name="__('My Dashboard')" :hasBadge="false" link="dashboard.index"
                                  :active-links="['dashboard.index']">
                     <RocketIcon class="text-gray-500 dark:text-gray-100"/>
