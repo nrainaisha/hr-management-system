@@ -62,7 +62,7 @@ const submit = () => {
     const swalWithBootstrapButtons = Swal.mixin({
         customClass: {
             cancelButton: 'mx-4 text-white bg-red-700 hover:bg-red-800 focus:outline-none focus:ring-4 focus:ring-red-300 font-medium rounded-full text-sm px-5 py-2.5 text-center mr-2 mb-2 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900',
-            confirmButton: 'text-white bg-purple-700 hover:bg-purple-800 focus:outline-none focus:ring-4 focus:ring-purple-300 font-medium rounded-full text-sm px-5 py-2.5 text-center mb-2 dark:bg-purple-600 dark:hover:bg-purple-700 dark:focus:ring-purple-900'
+            confirmButton: 'text-white bg-red-700 hover:bg-red-800 focus:outline-none focus:ring-4 focus:ring-red-300 font-medium rounded-full text-sm px-5 py-2.5 text-center mb-2 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900'
         },
         buttonsStyling: false
     })
@@ -179,7 +179,7 @@ onMounted(() => {
                 <div class="flex flex-col md:flex-row justify-between md:gap-4">
 
                     <!-- PAY DAY -->
-                    <Card class="w-full md:w-1/4 bg-gradient-to-r from-indigo-700 to-purple-800 glow-element">
+                    <Card class="w-full md:w-1/4 bg-gradient-to-r from-red-500 to-red-800">
                         <h1 class="text-2xl text-white">{{ __('Pay Day') }}</h1>
                         <div class="mt-4 text-white">
                             <p class="text-white">
@@ -269,28 +269,28 @@ onMounted(() => {
                             <Card class="w-full lg:w-1/4 !shadow-none !overflow-visible flex-1 " :fancy-p="false">
                                 <IconCard :heading="__('Payrolls')" :cta-text="__('Go To Payments')"
                                           :href="route('payrolls.index')">
-                                    <MoneyIcon class="!mb-4 !h-12 !w-12 text-purple-500"/>
+                                    <MoneyIcon class="!mb-4 !h-12 !w-12 text-red-500"/>
                                 </IconCard>
                             </Card>
 
                             <Card class="w-full lg:w-1/4 !shadow-none !overflow-visible flex-1 " :fancy-p="false">
                                 <IconCard :heading="__('Attendance')" :cta-text="__('Go to Attendance')"
                                           :href="route('attendance.dashboard')">
-                                    <TableIcon class="!mb-4 !h-12 !w-12 text-purple-500"/>
+                                    <TableIcon class="!mb-4 !h-12 !w-12 text-red-500"/>
                                 </IconCard>
                             </Card>
 
                             <Card class="w-full lg:w-1/4 !shadow-none !overflow-visible flex-1 " :fancy-p="false">
                                 <IconCard :heading="__('Calendar')" :cta-text="__('Go to Calendar')"
                                           :href="route('calendar.index')">
-                                    <CalendarIcon class="!mb-4 !h-12 !w-12 text-purple-500"/>
+                                    <CalendarIcon class="!mb-4 !h-12 !w-12 text-red-500"/>
                                 </IconCard>
                             </Card>
 
                             <Card class="w-full lg:w-1/4 !shadow-none !overflow-visible flex-1 " :fancy-p="false">
                                 <IconCard :heading="__('Support')" :cta-text="__('Go To Requests')"
                                           :href="route('requests.index')">
-                                    <MessageIcon class="!mb-4 !h-12 !w-12 text-purple-500"/>
+                                    <MessageIcon class="!mb-4 !h-12 !w-12 text-red-500"/>
                                 </IconCard>
                             </Card>
                         </div>
