@@ -6,12 +6,10 @@ use Illuminate\Database\Seeder;
 use App\Models\Branch;
 use App\Models\Department;
 use App\Models\Employee;
-use App\Models\EmployeePosition;
 use App\Models\EmployeeSalary;
 use App\Models\EmployeeShift;
 use App\Models\Globals;
 use App\Models\Manager;
-use App\Models\Position;
 use App\Models\Shift;
 use Spatie\Permission\Models\Role;
 
@@ -34,11 +32,6 @@ class StarterSeeder extends Seeder
             'name' => 'Sumber Manusia',
         ]);
 
-        Position::create([
-            'name' => 'Pengurus HR',
-            'description' => 'Bertanggungjawab atas semua aktiviti sumber manusia',
-        ]);
-
         Shift::create([
             'name' => "Syif Pagi",
             'start_time' => '08:00:00',
@@ -54,13 +47,6 @@ class StarterSeeder extends Seeder
             'password' => bcrypt('password'),
             'branch_id' => 1,
             'department_id' => 1,
-        ]);
-
-        EmployeePosition::create([
-            'employee_id' => 1,
-            'position_id' => 1,
-            'start_date' => now()->format('Y-m-d'),
-            'end_date' => null,
         ]);
 
         EmployeeShift::create([

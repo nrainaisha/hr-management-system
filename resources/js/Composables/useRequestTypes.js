@@ -1,8 +1,7 @@
 import {__} from "@/Composables/useTranslations.js";
 
 export const request_types = {
-    leave: __('Leave'),
-    payment: __('Payment'),
-    complaint: __('Complaint'),
-    other: __('Other'),
+    'Emergency Leave': __('Emergency Leave'),
+    'Annual Leave': __('Annual Leave'),
+    'Sick Leave': __('Sick Leave'),
 }

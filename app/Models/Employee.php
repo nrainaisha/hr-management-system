@@ -87,26 +87,6 @@ class Employee extends Authenticatable
     }
 
 
-    /**************------- POSITIONS -------*************/
-
-    public function employeePositions(): \Illuminate\Database\Eloquent\Relations\HasMany
-    {
-        return $this->hasMany(EmployeePosition::class, 'employee_id');
-//        return $this->hasManyThrough(Position::class, EmployeePosition::class, 'employee_id', 'id', 'id', 'position_id');
-    }
-
-    // WARNING: THIS FUNCTION ONLY FETCHES THE LAST ACTIVE POSITION. IF AN EMPLOYEE HAS MULTIPLE ACTIVE POSITIONS, THIS FUNCTION WILL ONLY RETURN THE LAST ONE
-    // USE activePositions() if you want to retrieve all active positions.
-    public function activePosition(): \Illuminate\Database\Eloquent\Collection
-    {
-        return $this->employeePositions()->where('end_date', null)->first()->get();
-    }
-
-    public function activePositions(): \Illuminate\Database\Eloquent\Collection
-    {
-        return $this->positions()->where('end_date', null)->get();
-    }
-
     /**************------- Department -------*************/
     public function department(): \Illuminate\Database\Eloquent\Relations\HasOne
     {
@@ -293,6 +273,11 @@ class Employee extends Authenticatable
             "actualHours" => $actualHours,
             "hoursDifference" => $actualHours - $expectedHours,
         ];
+    }
+
+    public function leaves()
+    {
+        return $this->hasMany(EmployeeLeave::class);
     }
 
 

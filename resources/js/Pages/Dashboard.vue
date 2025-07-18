@@ -158,16 +158,15 @@ onMounted(() => {
                         <div class="flex justify items-center">
                             <BlockQuote class="mb-0" v-if="quote" :style="2" :quote="quote['content']"
                                         :author="quote['author']"/>
-                            <BlockQuote class="mb-0" v-else :style="2" :quote="__('Loading Quote...')"
-                                        :author="__('Loading Author...')"/>
+                            <BlockQuote class="mb-0" v-else :style="2" :quote="__('Success is not the key to happiness. Happiness is the key to success. If you love what you are doing, you will be successful.')"
+                                        :author="__('Albert Scweitzer')"/>
                         </div>
                     </Card>
 
                     <Card class="w-full md:w-1/4 " vl>
                         <h1 class="text-2xl text-center font-semibold mb-4">{{ __('Your Salary') }}</h1>
                         <div class="space-y-4">
-                            <p class="text-xl text-center">{{ salary[0] }}
-                                <span> {{ new Intl.NumberFormat().format(salary[1]) }}</span></p>
+                            <p class="text-xl text-center">MYR <span> {{ new Intl.NumberFormat().format(salary[1]) }}</span></p>
                             <HorizontalRule class="!bg-neutral-300"/>
                             <p class="text-center text-gray-700 text-sm">
                                 {{ __('Last Updated: :salary', {salary: salary[2]}) }}</p>
@@ -266,12 +265,7 @@ onMounted(() => {
                         <h1 class="text-2xl">{{ __('Quick Actions') }}</h1>
                         <div class="flex flex-wrap justify-center gap-4">
 
-                            <Card class="w-full lg:w-1/4 !shadow-none !overflow-visible flex-1 " :fancy-p="false">
-                                <IconCard :heading="__('Payrolls')" :cta-text="__('Go To Payments')"
-                                          :href="route('payrolls.index')">
-                                    <MoneyIcon class="!mb-4 !h-12 !w-12 text-red-500"/>
-                                </IconCard>
-                            </Card>
+                            <!-- Remove Payrolls Card -->
 
                             <Card class="w-full lg:w-1/4 !shadow-none !overflow-visible flex-1 " :fancy-p="false">
                                 <IconCard :heading="__('Attendance')" :cta-text="__('Go to Attendance')"
@@ -281,18 +275,19 @@ onMounted(() => {
                             </Card>
 
                             <Card class="w-full lg:w-1/4 !shadow-none !overflow-visible flex-1 " :fancy-p="false">
-                                <IconCard :heading="__('Calendar')" :cta-text="__('Go to Calendar')"
-                                          :href="route('calendar.index')">
+                                <IconCard :heading="__('Schedule')" :cta-text="__('Go to Schedule')"
+                                          :href="$page.props.auth.user.roles.includes('admin') ? route('schedule.admin') : route('schedule.employee')">
                                     <CalendarIcon class="!mb-4 !h-12 !w-12 text-red-500"/>
                                 </IconCard>
                             </Card>
 
                             <Card class="w-full lg:w-1/4 !shadow-none !overflow-visible flex-1 " :fancy-p="false">
-                                <IconCard :heading="__('Support')" :cta-text="__('Go To Requests')"
-                                          :href="route('requests.index')">
+                                <IconCard :heading="__('Contact Support')" :cta-text="__('WhatsApp Support')"
+                                          href="https://wa.me/601111659435" target="_blank">
                                     <MessageIcon class="!mb-4 !h-12 !w-12 text-red-500"/>
                                 </IconCard>
                             </Card>
+
                         </div>
                     </Card>
                 </div>

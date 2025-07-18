@@ -132,11 +132,6 @@ const computedManages = computed(() => {
                             <DD>{{ employee.hired_on }}</DD>
                         </DescriptionListItem>
 
-                        <DescriptionListItem colored>
-                            <DT>{{__('Remote Worker?')}}</DT>
-                            <DD>{{ props.employee.is_remote ? __('Yes') : __('No') }}</DD>
-                        </DescriptionListItem>
-
                         <DescriptionListItem >
                             <DT>{{__('Address')}}</DT>
                             <DD><a :href="'https://www.google.com/maps/search/?api=1&query=' + props.employee.address" target=”_blank” >{{ employee.address }}</a></DD>
@@ -153,26 +148,11 @@ const computedManages = computed(() => {
                         </DescriptionListItem>
 
                         <DescriptionListItem colored>
-                            <DT>{{__('Department')}}</DT>
-                            <DD>{{ employee.department_name ?? __('N/A') }}</DD>
-                        </DescriptionListItem>
-
-                        <DescriptionListItem>
                             <DT>{{__('Salary')}}</DT>
                             <DD>{{ employee.salaries[employee.salaries.length - 1]['salary'].toLocaleString() + ' ' + employee.salaries[employee.salaries.length - 1]['currency'] }}</DD>
                         </DescriptionListItem>
 
                         <DescriptionListItem>
-                            <DT>{{__('Position')}}</DT>
-                            <DD>{{ (employee.employee_positions.length === 0) ? __('N/A') : employee.employee_positions[employee.employee_positions.length - 1]['position']?.['name'] ?? __('N/A') }}</DD>
-                        </DescriptionListItem>
-
-                        <DescriptionListItem colored>
-                            <DT>{{__('Shift')}}</DT>
-                            <DD>{{ (employee.employee_shifts.length === 0) ? __('N/A') : employee.employee_shifts.filter(shift => shift.end_date === null).map(shift => shift.shift?.name)[0] ?? __('N/A') }}</DD>
-                        </DescriptionListItem>
-
-                        <DescriptionListItem colored>
                             <DT>{{__('Access Permissions')}}</DT>
                             <DD>{{ (employee.roles.length === 0) ? __('Not Assigned') : employee.roles[employee.roles.length - 1]['name'].replace(/_/g, ' ').replace(/\b\w/g, (match) => match.toUpperCase()) }}</DD>
                         </DescriptionListItem>
@@ -212,32 +192,6 @@ const computedManages = computed(() => {
                                             <TableBody>{{salary.salary}}</TableBody>
                                             <TableBody>{{salary.start_date}}</TableBody>
                                             <TableBody>{{salary.end_date ?? __('Current')}}</TableBody>
-                                        </TableRow>
-                                    </template>
-                                </Table>
-                            </GenericModal>
-                        </div>
-
-                        <div class="px-4 py-3.5">
-                            <dt class="text-sm font-medium">{{__('Previous Positions')}}</dt>
-
-                            <GenericModal modalId='Positions Modal'
-                                          :title="__('Click Here To See Positions History')" :modalHeader="__('Previous Positions')"
-                                          :hasCancel="false" >
-
-                                <Table :totalNumber="1" :enablePaginator="false">
-                                    <template #Head>
-                                        <TableHead>{{__('Position')}}</TableHead>
-                                        <TableHead>{{__('Starting From')}}</TableHead>
-                                        <TableHead>{{__('Ending At')}}</TableHead>
-                                    </template>
-
-                                    <!--Iterate Here-->
-                                    <template #Body>
-                                        <TableRow v-for="position in employee.employee_positions" :key="position.id">
-                                            <TableBody>{{position.position?.name ?? __('DELETED POSITION')}}</TableBody>
-                                            <TableBody>{{position.start_date}}</TableBody>
-                                            <TableBody>{{position.end_date ?? __('Current')}}</TableBody>
                                         </TableRow>
                                     </template>
                                 </Table>

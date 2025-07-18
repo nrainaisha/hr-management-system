@@ -3,16 +3,12 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\Branch;
-use App\Models\Department;
 use App\Models\Employee;
-use App\Models\EmployeePosition;
 use App\Models\EmployeeSalary;
 use App\Models\EmployeeShift;
 use App\Models\Globals;
 use App\Models\Manager;
 use App\Models\Metric;
-use App\Models\Position;
 use App\Models\Request;
 use App\Models\Shift;
 use App\Services\CommonServices;
@@ -27,82 +23,93 @@ class DatabaseSeeder extends Seeder
         // Globals
         $this->seedGlobals();
 
-        // Branches, Departments, Positions, Shifts
-        $this->seedBranchesDepartmentsPositionsShifts();
-
-        // Create Admin and Example Employees
-        $root = Employee::factory()->create([
-            'name' => 'Ahmad Razif',
-            'email' => 'ahmad@myhrsolutions.my',
-            'phone' => '0123456789',
-            'national_id' => '900101145522',
-            'hired_on' => '2024-01-01',
-            'password' => bcrypt('password'),
+        // Seed Shifts (must be before EmployeeShift)
+        Shift::updateOrCreate([
+            'name' => 'Morning Shift',
+        ], [
+            'start_time' => '08:00:00',
+            'end_time' => '16:00:00',
+            'shift_payment_multiplier' => 1.0,
+            'description' => 'Standard morning shift',
         ]);
-
-        $emp = Employee::factory()->create([
-            'name' => 'Nur Aisyah',
-            'email' => 'aisyah@myhrsolutions.my',
-            'phone' => '0171234567',
-            'national_id' => '910202085522',
-            'hired_on' => '2024-02-01',
-            'password' => bcrypt('password'),
+        Shift::updateOrCreate([
+            'name' => 'Evening Shift',
+        ], [
+            'start_time' => '16:00:00',
+            'end_time' => '00:00:00',
+            'shift_payment_multiplier' => 1.2,
+            'description' => 'Standard evening shift',
         ]);
-
-        Employee::factory(14)->create();
-        Metric::factory(5)->create();
 
         // Roles
         $roles = ['admin', 'employee'];
         foreach ($roles as $role) {
-            Role::create(['name' => $role]);
+            Role::firstOrCreate(['name' => $role]);
         }
 
-        $root->assignRole('admin');
+        // Create Admin (Siti Noraini)
+        $admin = Employee::create([
+            'name' => 'Siti Noraini Binti Ahmad',
+            'email' => 'siti.noraini@myhrsolutions.my',
+            'phone' => '013-9876543',
+            'national_id' => '880202085522',
+            'hired_on' => '2024-02-01',
+            'password' => bcrypt('password'),
+        ]);
+        $admin->assignRole('admin');
 
-        // Assign Positions, Shifts, Salaries
-        foreach (Employee::all() as $index => $employee) {
-            if ($employee->id != $root->id) {
-                $employee->assignRole('employee');
-            }
+        // Create 3 Employees
+        $employee1 = Employee::create([
+            'name' => 'Ahmad Razif Bin Ismail',
+            'email' => 'ahmad.razif@myhrsolutions.my',
+            'phone' => '012-3456789',
+            'national_id' => '900101145522',
+            'hired_on' => '2024-01-01',
+            'password' => bcrypt('password'),
+        ]);
+        $employee1->assignRole('employee');
 
-            EmployeePosition::create([
-                'employee_id' => $employee->id,
-                'position_id' => ($index % 4) + 1,
-                'start_date' => now()->format('Y-m-d'),
-                'end_date' => null,
-            ]);
+        $employee2 = Employee::create([
+            'name' => 'Muhammad Faiz Bin Abdullah',
+            'email' => 'faiz.abdullah@myhrsolutions.my',
+            'phone' => '014-2233445',
+            'national_id' => '950303105522',
+            'hired_on' => '2024-03-01',
+            'password' => bcrypt('password'),
+        ]);
+        $employee2->assignRole('employee');
 
+        $employee3 = Employee::create([
+            'name' => 'Lim Wei Jie',
+            'email' => 'lim.weijie@myhrsolutions.my',
+            'phone' => '016-5566778',
+            'national_id' => '970404125522',
+            'hired_on' => '2024-04-01',
+            'password' => bcrypt('password'),
+        ]);
+        $employee3->assignRole('employee');
+
+        // Assign Shifts and Salaries
+        $employees = [$admin, $employee1, $employee2, $employee3];
+        foreach ($employees as $index => $employee) {
             EmployeeShift::create([
                 'employee_id' => $employee->id,
                 'shift_id' => ($index % 2) + 1,
                 'start_date' => now()->format('Y-m-d'),
                 'end_date' => null,
             ]);
-
-            $currencies = ['MYR', 'USD', 'EUR', 'GBP', 'IDR'];
             EmployeeSalary::create([
                 'employee_id' => $employee->id,
-                'currency' => $currencies[array_rand($currencies)],
-                'salary' => fake()->numberBetween(3000, 10000),
+                'currency' => 'MYR',
+                'salary' => 5000 + ($index * 500),
                 'start_date' => now()->format('Y-m-d'),
                 'end_date' => null,
             ]);
-
-            $this->seedAttendance($employee);
         }
 
-        // Assign Managers
+        // Assign Managers (admin only)
         Manager::create([
-            'employee_id' => $root->id,
-            'branch_id' => 1,
-            'department_id' => null,
-        ]);
-
-        Manager::create([
-            'employee_id' => $emp->id,
-            'branch_id' => null,
-            'department_id' => 1,
+            'employee_id' => $admin->id,
         ]);
 
         // Requests, Calendar Items
@@ -117,45 +124,6 @@ class DatabaseSeeder extends Seeder
             'organization_address' => 'Lot 88, Jalan Ampang, Kuala Lumpur, Malaysia',
             'absence_limit' => 30,
             'email' => 'info@myhrsolutions.my',
-        ]);
-    }
-
-    private function seedBranchesDepartmentsPositionsShifts(): void
-    {
-        Branch::factory()->create(['name' => 'Kuala Lumpur HQ']);
-        Branch::factory()->create(['name' => 'Penang Branch']);
-
-        Department::create(['name' => 'Human Resources']);
-        Department::create(['name' => 'Finance']);
-        Department::create(['name' => 'IT & Development']);
-        Department::create(['name' => 'Customer Care']);
-
-        Position::create([
-            'name' => 'CEO',
-            'description' => 'Chief Executive Officer',
-        ]);
-        Position::create([
-            'name' => 'Operations Manager',
-            'description' => 'Handles daily operations of the company',
-        ]);
-        Position::create([
-            'name' => 'Software Engineer',
-            'description' => 'Responsible for system development and support',
-        ]);
-        Position::create([
-            'name' => 'Sales Executive',
-            'description' => 'Manages sales and customer engagement',
-        ]);
-
-        Shift::create([
-            'name' => "Morning Shift",
-            'start_time' => '08:00:00',
-            'end_time' => '16:00:00',
-        ]);
-        Shift::create([
-            'name' => "Evening Shift",
-            'start_time' => '16:00:00',
-            'end_time' => '00:00:00',
         ]);
     }
 
@@ -179,7 +147,7 @@ class DatabaseSeeder extends Seeder
         foreach (Employee::all() as $employee) {
             Request::create([
                 'employee_id' => $employee->id,
-                'type' => fake()->randomElement(['leave', 'payment', 'complaint', 'other']),
+                'type' => fake()->randomElement(['Annual Leave', 'Emergency Leave', 'Sick Leave']),
                 'start_date' => Carbon::now()->addDays(rand(1, 15))->toDateString(),
                 'end_date' => null,
                 'message' => fake()->sentence(10),

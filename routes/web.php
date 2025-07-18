@@ -21,9 +21,6 @@ Route::group(['middleware' => ['role:admin', 'auth']], function () {
     Route::get('employees/find', [\App\Http\Controllers\EmployeeController::class, 'find'])->name('employees.find');
     Route::get('employees/archived', [\App\Http\Controllers\EmployeeController::class, 'archivedIndex'])->name('employees.archived');
     Route::resource('employees', \App\Http\Controllers\EmployeeController::class);
-    Route::resource('branches', \App\Http\Controllers\BranchController::class);
-    Route::resource('departments', \App\Http\Controllers\DepartmentController::class);
-    Route::resource('positions', \App\Http\Controllers\PositionController::class);
     Route::resource('shifts', \App\Http\Controllers\ShiftController::class);
     Route::resource('metrics', \App\Http\Controllers\MetricsController::class);
     Route::resource('requests', \App\Http\Controllers\RequestController::class);
@@ -63,11 +60,13 @@ Route::group(['middleware' => ['role:admin', 'auth']], function () {
     // Task API routes
     Route::get('tasks', [\App\Http\Controllers\TaskController::class, 'index'])->name('tasks.index');
     Route::post('tasks', [\App\Http\Controllers\TaskController::class, 'store'])->name('tasks.store');
-    Route::put('tasks/{id}', [\App\Http\Controllers\TaskController::class, 'update'])->name('tasks.update');
     Route::delete('tasks/{id}', [\App\Http\Controllers\TaskController::class, 'destroy'])->name('tasks.destroy');
 
     // New route
     Route::get('schedule/day', [\App\Http\Controllers\ScheduleController::class, 'day'])->name('schedule.day');
+
+    // New route for Reports
+    Route::get('admin/reports', [\App\Http\Controllers\ReportsController::class, 'index'])->name('reports.index');
 
 });
 
@@ -97,6 +96,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::post('attendance/signoff', [\App\Http\Controllers\AttendanceController::class, 'dashboardSignOffAttendance'])->name('attendance.dashboardSignOff');
 
     Route::get('my-tasks/day', [\App\Http\Controllers\TaskController::class, 'myTasksForDay'])->middleware('auth');
+    Route::put('tasks/{id}', [\App\Http\Controllers\TaskController::class, 'update'])->name('tasks.update');
 
 });
 

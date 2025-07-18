@@ -34,9 +34,12 @@ const isLTR = document.dir === 'ltr';
         </div>
 
         <div class="pb-6 pt-0 flex justify-center">
-            <Link
+            <a
+                v-if="href && (href.startsWith('http://') || href.startsWith('https://'))"
+                :href="href"
+                target="_blank"
+                rel="noopener noreferrer"
                 class="!font-medium !text-blue-gray-900 !transition-colors hover:!text-purple-500"
-                :href="href ?? '#'"
             >
                 <button
                     class="flex select-none items-center gap-2 rounded-lg py-2 px-4 text-center align-middle font-sans text-xs font-bold uppercase text-purple-500 transition-all hover:bg-purple-500/10 active:bg-purple-500/30 disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
@@ -44,6 +47,21 @@ const isLTR = document.dir === 'ltr';
                     data-ripple-dark="true"
                 >
 
+                    {{ ctaText }}
+                    <RightArrowIcon v-if="isLTR"/>
+                    <LeftArrowIcon v-if="!isLTR"/>
+                </button>
+            </a>
+            <Link
+                v-else-if="href"
+                class="!font-medium !text-blue-gray-900 !transition-colors hover:!text-purple-500"
+                :href="href"
+            >
+                <button
+                    class="flex select-none items-center gap-2 rounded-lg py-2 px-4 text-center align-middle font-sans text-xs font-bold uppercase text-purple-500 transition-all hover:bg-purple-500/10 active:bg-purple-500/30 disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
+                    type="button"
+                    data-ripple-dark="true"
+                >
                     {{ ctaText }}
                     <RightArrowIcon v-if="isLTR"/>
                     <LeftArrowIcon v-if="!isLTR"/>

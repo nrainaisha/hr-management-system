@@ -13,12 +13,18 @@ const props = defineProps({
 
 <template>
   <div>
-    <Link type="button"
+    <Link v-if="href" type="button"
             :href="href"
-            class="text-gray-900 bg-white hover:bg-gray-50 border border-gray-200 focus:ring-2 focus:outline-none focus:ring-purple-500 font-medium rounded-lg text-sm px-5 p-2 text-center inline-flex items-center dark:focus:ring-gray-600 dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:hover:bg-gray-700 ">
-        <span v-if="IconAfter" class="ltr:mr-2 rtl:ml-2">{{ text }}</span>
+            class="bg-red-600 hover:bg-red-700 text-white rounded-full font-semibold text-sm px-5 py-2 flex items-center justify-center text-center border-none shadow-none focus:outline-none focus:ring-2 focus:ring-red-400">
+        <span v-if="IconAfter" class="ltr:mr-2 rtl:ml-2 flex items-center justify-center">{{ text }}</span>
         <slot />
-        <span v-if="!IconAfter"  class="ltr:ml-2 rtl:mr-2">{{ text }}</span>
+        <span v-if="!IconAfter"  class="ltr:ml-2 rtl:mr-2 flex items-center justify-center">{{ text }}</span>
     </Link>
+    <button v-else type="button"
+            class="bg-red-600 hover:bg-red-700 text-white rounded-full font-semibold text-sm px-5 py-2 flex items-center justify-center text-center border-none shadow-none focus:outline-none focus:ring-2 focus:ring-red-400">
+        <span v-if="IconAfter" class="ltr:mr-2 rtl:ml-2 flex items-center justify-center">{{ text }}</span>
+        <slot />
+        <span v-if="!IconAfter"  class="ltr:ml-2 rtl:mr-2 flex items-center justify-center">{{ text }}</span>
+    </button>
   </div>
 </template>

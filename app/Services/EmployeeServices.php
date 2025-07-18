@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Mail\EmployeeRegisterationCredentials;
 use App\Models\ArchivedEmployee;
 use App\Models\Employee;
-use App\Models\EmployeePosition;
 use App\Models\EmployeeSalary;
 use App\Models\EmployeeShift;
 use Carbon\Carbon;
@@ -28,9 +27,6 @@ class EmployeeServices
             'address' => $res['address'],
             'bank_acc_no' => $res['bank_acc_no'],
             'hired_on' => $res['hired_on'],
-            'branch_id' => $res['branch_id'],
-            'department_id' => $res['department_id'],
-            'is_remote' => $res['is_remote'],
             'password' => $res['password'],
         ]);
 
@@ -42,16 +38,6 @@ class EmployeeServices
             'start_date' => Carbon::createFromFormat('Y-m-d', $res['hired_on'])->addMonth()->startOfMonth(),
             'end_date' => null,
         ]);
-
-        // Assign Position
-        if (isset($res['position_id'])) {
-            EmployeePosition::create([
-                'employee_id' => $emp['id'],
-                'position_id' => $res['position_id'],
-                'start_date' => Carbon::createFromFormat('Y-m-d', $res['hired_on']),
-                'end_date' => null,
-            ]);
-        }
 
         // Assign Shift
         if (isset($res['shift_id'])) {
@@ -88,27 +74,11 @@ class EmployeeServices
             'address' => $res['address'],
             'bank_acc_no' => $res['bank_acc_no'],
             'hired_on' => $res['hired_on'],
-            'branch_id' => $res['branch_id'],
-            'department_id' => $res['department_id'],
-            'is_remote' => $res['is_remote'],
         ]);
 
         // Update Shifts, Salary, Position, and Permissions
-        $curPos = $employee->employeePositions()->whereNull('end_date')->first();
-        if ($curPos->position_id != $res['position_id']) {
-            $curPos->update([
-                'end_date' => Carbon::now()->format('Y-m-d'),
-            ]);
-            $employee->employeePositions()->create([
-                'employee_id' => $employee->id,
-                'position_id' => $res['position_id'],
-                'start_date' => Carbon::now()->format('Y-m-d'),
-                'end_date' => null,
-            ]);
-        }
-
         $curShift = $employee->employeeShifts()->whereNull('end_date')->first();
-        if ($curShift->shift_id != $res['shift_id']) {
+        if (isset($res['shift_id']) && $curShift && $curShift->shift_id != $res['shift_id']) {
             $curShift->update([
                 'end_date' => Carbon::now()->format('Y-m-d'),
             ]);
@@ -162,7 +132,6 @@ class EmployeeServices
             'bank_acc_no' => $employee->bank_acc_no,
             'hired_on' => $employee->hired_on,
             'released_on' => Carbon::now()->format('Y-m-d'),
-            'was_remote' => $employee->is_remote,
         ]);
 
         // Delete employee

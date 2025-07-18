@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('requests', function (Blueprint $table) {
             $table->id();
             $table->foreignId('employee_id')->constrained()->onDelete('cascade');
-            $table->enum('type', ['complaint', 'payment', 'leave', 'other']);
+            $table->enum('type', ['Annual Leave', 'Emergency Leave', 'Sick Leave']);
             $table->date('start_date');
             $table->date('end_date')->nullable();
             $table->text('message')->nullable();

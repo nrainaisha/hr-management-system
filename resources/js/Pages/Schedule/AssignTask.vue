@@ -80,84 +80,101 @@ async function addTask(scheduleId) {
     <template #tabs>
       <ScheduleTabs />
     </template>
-    <div class="py-8">
-      <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-        <Card>
-          <div class="flex justify-between items-center mb-6">
-            <h1 class="text-2xl font-bold">Assign Task to Shifts</h1>
-            <FlexButton :text="'Today'" @click="selectedDate = dayjs().format('YYYY-MM-DD')" />
+    <div class="py-8  min-h-screen w-full overflow-x-hidden">
+      <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 w-full">
+        <div class="bg-gray-900 rounded-2xl shadow-lg border border-gray-800 p-8 mb-8 w-full">
+          <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+            <h1 class="text-3xl font-extrabold text-gray-100">Assign Task to Shifts</h1>
+            <button @click="selectedDate = dayjs().format('YYYY-MM-DD')" class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-full font-semibold text-lg shadow transition">Today</button>
           </div>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6 items-center">
-            <div class="flex items-center gap-2">
-              <span class="font-semibold">Select Date:</span>
+          <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div class="flex items-center gap-3">
+              <span class="font-semibold text-gray-200 text-lg">Select Date:</span>
               <VueDatePicker
                 v-model="selectedDate"
                 :enable-time-picker="false"
                 format="yyyy-MM-dd"
                 :placeholder="'Select a date...'"
-                class="w-full max-w-xs"
+                class="w-full max-w-xs bg-gray-800 text-gray-100 border border-gray-700 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-400"
                 required
               />
             </div>
-            <div class="text-blue-700 text-sm font-medium">{{ formattedSelectedDate }}</div>
+            <div class="text-blue-400 text-base font-medium">{{ formattedSelectedDate }}</div>
           </div>
-        </Card>
-        <Card class="mt-8">
-          <div v-if="loading" class="flex justify-center items-center py-12">
-            <svg class="animate-spin h-8 w-8 text-blue-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path></svg>
-          </div>
-          <div v-else>
-            <Table :totalNumber="2" :enablePaginator="false">
-              <template #Head>
-                <TableHead class="bg-gray-100 text-base font-bold text-gray-700 py-4">Shift</TableHead>
-                <TableHead class="bg-gray-100 text-base font-bold text-gray-700 py-4">Staff</TableHead>
-                <TableHead class="bg-gray-100 text-base font-bold text-gray-700 py-4">Tasks</TableHead>
-              </template>
-              <template #Body>
-                <TableRow v-for="shiftIdx in [0,1]" :key="shiftIdx" class="border-b last:border-b-0">
-                  <TableBody class="py-4 align-top">
-                    <div class="font-semibold text-gray-900 text-base">{{ shiftNames[shiftIdx] }}</div>
-                    <div class="text-xs text-gray-500">{{ shiftTimes[shiftIdx].start }} - {{ shiftTimes[shiftIdx].end }}</div>
-                  </TableBody>
-                  <TableBody class="py-4 align-top">
-                    <span v-if="assignments[shiftIdx]" class="inline-flex items-center gap-2 bg-gray-100 rounded-full px-3 py-1 text-sm font-semibold">
-                      <span class="flex items-center justify-center bg-blue-900 text-white rounded-full w-7 h-7 font-bold">{{ getStaffInitials(assignments[shiftIdx]) }}</span>
-                      <span class="text-blue-700 font-semibold" :title="getStaffName(assignments[shiftIdx])">{{ getStaffName(assignments[shiftIdx]) }}</span>
-                    </span>
-                    <span v-else class="italic text-gray-400 bg-gray-50 rounded px-3 py-1">No Staff Assigned</span>
-                  </TableBody>
-                  <TableBody class="py-4 align-top">
-                    <div v-if="assignments[shiftIdx + '_id']">
-                      <div v-if="tasks[assignments[shiftIdx + '_id']] && tasks[assignments[shiftIdx + '_id']].length">
-                        <ul class="space-y-2">
-                          <li v-for="task in tasks[assignments[shiftIdx + '_id']]" :key="task.id" class="flex items-center bg-gray-50 rounded-full px-4 py-2 text-sm">
-                            <span class="font-bold text-gray-900 mr-2">{{ task.title }}</span>
-                            <span v-if="task.description" class="text-gray-500 mr-2">- {{ task.description }}</span>
-                            <span class="ml-auto text-xs text-gray-400">[{{ task.status }}]</span>
-                          </li>
-                        </ul>
-                      </div>
-                      <div class="flex gap-2 mt-2">
-                        <input v-model="(newTask[assignments[shiftIdx + '_id']] ??= { title: '', description: '' }).title" placeholder="Task title" class="border border-gray-300 rounded-full px-4 py-2 text-sm w-32" aria-label="Task title" />
-                        <input v-model="(newTask[assignments[shiftIdx + '_id']] ??= { title: '', description: '' }).description" placeholder="Description" class="border border-gray-300 rounded-full px-4 py-2 text-sm w-40" aria-label="Task description" />
-                        <FlexButton :text="'Add'" @click="addTask(assignments[shiftIdx + '_id'])" />
-                      </div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
+          <div v-for="shiftIdx in [0,1]" :key="shiftIdx" class="bg-gray-900 rounded-2xl shadow-lg border border-gray-800 p-8 flex flex-col min-h-[340px] w-full overflow-x-auto">
+            <div class="flex items-center gap-3 mb-4 border-b border-gray-800 pb-2">
+              <div class="text-xl font-bold text-gray-100">{{ shiftNames[shiftIdx] }}</div>
+              <div class="text-sm text-gray-400">{{ shiftTimes[shiftIdx].start }} - {{ shiftTimes[shiftIdx].end }}</div>
+            </div>
+            <div class="mb-4">
+              <div v-if="assignments[shiftIdx]" class="inline-flex items-center gap-2 bg-blue-900 rounded-full px-4 py-1 text-base font-semibold">
+                <span class="text-blue-200 font-semibold" :title="getStaffName(assignments[shiftIdx])">{{ getStaffName(assignments[shiftIdx]) }}</span>
+              </div>
+              <div v-else class="italic text-gray-500 bg-gray-800 rounded px-4 py-1">No Staff Assigned</div>
+            </div>
+            <div class="flex-1">
+              <div v-if="assignments[shiftIdx + '_id']">
+                <div v-if="tasks[assignments[shiftIdx + '_id']] && tasks[assignments[shiftIdx + '_id']].length">
+                  <ul class="space-y-3 mb-6">
+                    <li v-for="task in tasks[assignments[shiftIdx + '_id']]" :key="task.id" class="flex items-center bg-gray-800 rounded-lg px-4 py-3 text-base group border border-gray-700">
+                      <span class="font-bold text-gray-100 mr-2">{{ task.title }}</span>
+                      <span v-if="task.description" class="text-gray-400 mr-2">- {{ task.description }}</span>
+                      <span class="ml-auto text-xs font-semibold px-3 py-1 rounded-full shadow"
+                            :class="task.status === 'completed' ? 'bg-green-800 text-green-100' : 'bg-yellow-800 text-yellow-100'">
+                        {{ task.status === 'completed' ? 'Completed' : 'Pending' }}
+                      </span>
+                    </li>
+                  </ul>
+                </div>
+                <div class="flex flex-col gap-4 bg-gray-800 rounded-xl p-5 border border-gray-700">
+                  <div class="font-semibold text-gray-200 mb-1 text-lg">Add New Task</div>
+                  <div class="flex flex-col md:flex-row md:items-end gap-4">
+                    <div class="flex-1 flex flex-col gap-1">
+                      <label class="text-gray-300 text-sm font-semibold mb-1" :for="'task-title-' + shiftIdx">Task Title</label>
+                      <input
+                        :id="'task-title-' + shiftIdx"
+                        v-model="(newTask[assignments[shiftIdx + '_id']] ??= { title: '', description: '' }).title"
+                        placeholder="Enter task title"
+                        class="border border-gray-700 bg-gray-900 text-gray-100 rounded-lg px-4 py-2 text-base focus:ring-2 focus:ring-blue-400 focus:outline-none shadow-sm w-full"
+                        aria-label="Task title"
+                      />
                     </div>
-                  </TableBody>
-                </TableRow>
-              </template>
-            </Table>
-            <div v-if="!assignments[0] && !assignments[1]" class="flex flex-col items-center justify-center py-12">
-              <svg class="mb-2 w-10 h-10 text-blue-200" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 14v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-              <span class="text-gray-400 font-semibold text-base">No staff assigned for this date.</span>
+                    <div class="flex-1 flex flex-col gap-1">
+                      <label class="text-gray-300 text-sm font-semibold mb-1" :for="'task-desc-' + shiftIdx">Description</label>
+                      <textarea
+                        :id="'task-desc-' + shiftIdx"
+                        v-model="(newTask[assignments[shiftIdx + '_id']] ??= { title: '', description: '' }).description"
+                        placeholder="Describe the task (optional)"
+                        rows="2"
+                        class="border border-gray-700 bg-gray-900 text-gray-100 rounded-lg px-4 py-2 text-base resize-none focus:ring-2 focus:ring-blue-400 focus:outline-none shadow-sm w-full"
+                        aria-label="Task description"
+                      />
+                    </div>
+                    <button
+                      @click="addTask(assignments[shiftIdx + '_id'])"
+                      :disabled="!(newTask[assignments[shiftIdx + '_id']] && newTask[assignments[shiftIdx + '_id']].title)"
+                      class="bg-green-700 hover:bg-green-800 text-white px-6 py-2 rounded-full font-semibold text-base shadow transition disabled:opacity-50 disabled:cursor-not-allowed mt-2 md:mt-0"
+                    >Add</button>
+                  </div>
+                </div>
+              </div>
+              <div v-else class="text-gray-500 italic mt-8">No staff assigned for this shift.</div>
             </div>
           </div>
-        </Card>
+        </div>
+        <div v-if="!assignments[0] && !assignments[1]" class="flex flex-col items-center justify-center py-16">
+          <svg class="mb-2 w-12 h-12 text-blue-800" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 14v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          <span class="text-gray-500 font-semibold text-xl">No staff assigned for this date.</span>
+        </div>
       </div>
     </div>
   </AuthenticatedLayout>
 </template>
 
 <style scoped>
-/**** Remove most custom styles, rely on shared components for layout and theme ****/
+.group:hover {
+  background-color: #1f2937;
+}
 </style>

@@ -25,6 +25,18 @@ async function fetchTasks() {
   loading.value = false;
 }
 
+async function completeTask(task) {
+  if (task.status === 'completed') return;
+  if (!confirm('Are you sure you want to mark this task as completed?')) return;
+  try {
+    await axios.put(`/tasks/${task.id}`, { status: 'completed' });
+    // Update the task status locally
+    task.status = 'completed';
+  } catch (e) {
+    alert('Failed to update task status.');
+  }
+}
+
 onMounted(fetchTasks);
 watch(selectedDate, fetchTasks);
 </script>
@@ -34,54 +46,64 @@ watch(selectedDate, fetchTasks);
     <template #tabs>
       <MyScheduleTabs />
     </template>
-    <div class="py-8">
+    <div class="py-8 min-h-screen">
       <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-        <Card>
+        <Card class="bg-gray-800 rounded-xl shadow-lg border border-gray-700">
           <div class="flex justify-between items-center mb-6">
-            <h1 class="text-2xl font-bold">View My Tasks</h1>
+            <h1 class="text-2xl font-bold text-gray-200">View My Tasks</h1>
             <FlexButton :text="'Today'" @click="selectedDate = dayjs().format('YYYY-MM-DD')" />
           </div>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6 items-center">
             <div class="flex items-center gap-2">
-              <span class="font-semibold">Select Date:</span>
+              <span class="font-semibold text-gray-200">Select Date:</span>
               <VueDatePicker
                 v-model="selectedDate"
                 :enable-time-picker="false"
                 format="yyyy-MM-dd"
                 :placeholder="'Select a date...'"
-                class="w-full max-w-xs"
+                class="w-full max-w-xs bg-gray-900 text-gray-100 border border-gray-700 rounded-md"
                 required
               />
             </div>
-            <div class="text-blue-700 text-sm font-medium">{{ formattedSelectedDate }}</div>
+            <div class="text-blue-300 text-sm font-medium">{{ formattedSelectedDate }}</div>
           </div>
         </Card>
-        <Card class="mt-8">
+        <Card class="mt-8 bg-gray-800 rounded-xl shadow-lg border border-gray-700">
           <div v-if="loading" class="flex justify-center items-center py-12">
             <svg class="animate-spin h-8 w-8 text-blue-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path></svg>
           </div>
           <div v-else>
             <div class="mb-8">
-              <h2 class="text-lg font-semibold text-gray-700 mb-4">Morning Tasks</h2>
+              <h2 class="text-lg font-semibold text-gray-200 mb-4">Morning Tasks</h2>
               <ul v-if="tasks.morning.length">
-                <li v-for="task in tasks.morning" :key="task.id" class="flex items-center bg-gray-50 rounded-full px-4 py-2 text-sm mb-2">
-                  <span class="font-bold text-gray-900 mr-2">{{ task.title }}</span>
-                  <span v-if="task.description" class="text-gray-500 mr-2">- {{ task.description }}</span>
-                  <span class="ml-auto text-xs text-gray-400">[{{ task.status }}]</span>
+                <li v-for="task in tasks.morning" :key="task.id" class="flex items-center bg-gray-900 rounded-full px-4 py-2 text-sm mb-2">
+                  <span class="font-bold text-gray-200 mr-2">{{ task.title }}</span>
+                  <span v-if="task.description" class="text-gray-400 mr-2">- {{ task.description }}</span>
+                  <span class="ml-auto text-xs text-gray-500">[{{ task.status }}]</span>
+                  <button
+                    v-if="task.status !== 'completed'"
+                    @click="completeTask(task)"
+                    class="ml-4 px-3 py-1 rounded bg-green-600 hover:bg-green-700 text-white text-xs font-semibold focus:outline-none"
+                  >Complete</button>
                 </li>
               </ul>
-              <div v-else class="text-gray-400 italic">No Task Assigned</div>
+              <div v-else class="text-gray-500 italic">No Task Assigned</div>
             </div>
             <div>
-              <h2 class="text-lg font-semibold text-gray-700 mb-4">Evening Tasks</h2>
+              <h2 class="text-lg font-semibold text-gray-200 mb-4">Evening Tasks</h2>
               <ul v-if="tasks.evening.length">
-                <li v-for="task in tasks.evening" :key="task.id" class="flex items-center bg-gray-50 rounded-full px-4 py-2 text-sm mb-2">
-                  <span class="font-bold text-gray-900 mr-2">{{ task.title }}</span>
-                  <span v-if="task.description" class="text-gray-500 mr-2">- {{ task.description }}</span>
-                  <span class="ml-auto text-xs text-gray-400">[{{ task.status }}]</span>
+                <li v-for="task in tasks.evening" :key="task.id" class="flex items-center bg-gray-900 rounded-full px-4 py-2 text-sm mb-2">
+                  <span class="font-bold text-gray-200 mr-2">{{ task.title }}</span>
+                  <span v-if="task.description" class="text-gray-400 mr-2">- {{ task.description }}</span>
+                  <span class="ml-auto text-xs text-gray-500">[{{ task.status }}]</span>
+                  <button
+                    v-if="task.status !== 'completed'"
+                    @click="completeTask(task)"
+                    class="ml-4 px-3 py-1 rounded bg-green-600 hover:bg-green-700 text-white text-xs font-semibold focus:outline-none"
+                  >Complete</button>
                 </li>
               </ul>
-              <div v-else class="text-gray-400 italic">No Task Assigned</div>
+              <div v-else class="text-gray-500 italic">No Task Assigned</div>
             </div>
           </div>
         </Card>

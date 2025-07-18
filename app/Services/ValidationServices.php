@@ -39,12 +39,10 @@ Class ValidationServices extends Controller {
             'hired_on' => ['nullable', 'date_format:Y-m-d'],
             'address' => ['required', 'string', 'max:255'],
             'bank_acc_no' => ['nullable', 'iban'],
-            'branch_id' => ['required', 'integer'],
-            'department_id' => ['required', 'integer'],
-            'is_remote' => ['required', 'boolean'],
-
-            'shift_id' => ['required', 'integer'],
-            'position_id' => ['required', 'integer'],
+            // 'branch_id' => ['required', 'integer'],
+            // 'department_id' => ['required', 'integer'],
+            // 'shift_id' => ['required', 'integer'],
+            'shift_id' => ['nullable', 'integer'],
             'currency' => ['required'],
             'salary' => ['required','integer'],
             'role' => ['required', Rule::in($this->roles)],
@@ -64,12 +62,10 @@ Class ValidationServices extends Controller {
             'hired_on' => ['nullable', 'date'],
             'address' => ['required', 'string', 'max:255'],
             'bank_acc_no' => ['iban', 'nullable'],
-            'branch_id' => ['required', 'integer'],
-            'department_id' => ['required', 'integer'],
-            'is_remote' => ['required', 'boolean'],
-
-            'shift_id' => ['required', 'integer'],
-            'position_id' => ['required', 'integer'],
+            // 'branch_id' => ['required', 'integer'],
+            // 'department_id' => ['required', 'integer'],
+            // 'shift_id' => ['required', 'integer'],
+            'shift_id' => ['nullable', 'integer'],
             'currency' => ['required'],
             'salary' => ['required','integer'],
             'role' => ['required', Rule::in($this->roles)],
@@ -81,12 +77,6 @@ Class ValidationServices extends Controller {
             'shift_id' => ['nullable', 'integer'],
         ], $this->validationMessages);
     }
-    public function validatePositionIdDetails($request)
-    {
-        return $request->validate([
-            'position_id' => ['nullable', 'integer'],
-        ], $this->validationMessages);
-    }
     public function validateEmployeeSalaryDetails($request)
     {
 //        dd($request-);
@@ -95,62 +85,6 @@ Class ValidationServices extends Controller {
             'salary' => ['required','integer'],
         ], $this->validationMessages);
     }
-    public function validatePositionCreationDetails($request)
-    {
-        return $request->validate([
-            'name' => ['required', 'string', 'max:255', 'unique:positions'],
-            'description' => ['nullable', 'string'],
-        ], $this->validationMessages);
-    }
-    public function validatePositionUpdateDetails($request, $id)
-    {
-        return $request->validate([
-            'name' => ['required', 'string', 'max:255', 'unique:positions,name,'.$id],
-            'description' => ['nullable', 'string'],
-        ], $this->validationMessages);
-    }
-    public function validateDepartmentCreationDetails($request)
-    {
-        return $request->validate([
-            'name' => ['required', 'string', 'max:255', 'unique:departments'],
-            'manager_id' => ['nullable', 'integer'],
-        ], $this->validationMessages);
-    }
-    public function validateDepartmentUpdateDetails($request, $id)
-    {
-        //             'name' => ['required', 'string', 'max:255', 'unique:branches,name,'.$id],
-        return $request->validate([
-            'name' => ['required', 'string', 'max:255', 'unique:departments,name,'.$id],
-            'manager_id' => ['nullable', 'integer'],
-        ], $this->validationMessages);
-    }
-    public function validateEmployeeRoleDetails($request)
-    {
-        return $request->validate([
-            'role' => ['required', Rule::in($this->roles)],
-        ], $this->validationMessages);
-    }
-    public function validateBranchCreationDetails($request)
-    {
-        return $request->validate([
-            'name' => ['required', 'string', 'max:255', 'unique:branches'],
-            'address' => ['required', 'string', 'max:255'],
-            'phone' => ['required', 'regex:/(^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$)/'],
-            'email' => ['required', 'email:strict'],
-            'manager_id' => ['nullable', 'integer'],
-        ], $this->validationMessages);
-    }
-    public function validateBranchUpdateDetails($request, $id)
-    {
-        return $request->validate([
-            'name' => ['required', 'string', 'max:255', 'unique:branches,name,'.$id],
-            'address' => ['required', 'string', 'max:255'],
-            'phone' => ['required', 'regex:/(^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$)/'],
-            'email' => ['required', 'email:strict'],
-            'manager_id' => ['nullable', 'integer'],
-        ], $this->validationMessages);
-    }
-
     public function validateShiftCreationDetails($request)
     {
         return $request->validate([
@@ -225,7 +159,7 @@ Class ValidationServices extends Controller {
     public function validateRequestCreationDetails($request)
     {
         return $request->validate([
-            'type' => ['required', 'string', 'in:complaint,payment,leave,other'],
+            'type' => ['required', 'string', 'in:Annual Leave,Emergency Leave,Sick Leave'],
             'date' => ['array','size:2'],
             'date.*' => ['nullable', 'date_format:Y-m-d'],
             'message' => ['nullable', 'string'],

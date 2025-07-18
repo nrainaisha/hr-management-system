@@ -11,10 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('managers', function (Blueprint $table) {
+        Schema::create('employee_leaves', function (Blueprint $table) {
             $table->id();
             $table->foreignId('employee_id')->constrained()->onDelete('cascade');
+            $table->enum('leave_type', ['Annual Leave', 'Emergency Leave', 'Sick Leave']);
+            $table->integer('balance')->nullable(); // null for unlimited (sick leave)
             $table->timestamps();
+            $table->unique(['employee_id', 'leave_type']);
         });
     }
 
@@ -23,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('managers');
+        Schema::dropIfExists('employee_leaves');
     }
-};
+}; 

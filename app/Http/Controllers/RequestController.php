@@ -6,6 +6,8 @@ use App\Services\RequestServices;
 use App\Services\ValidationServices;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Inertia\Response;
+use App\Models\EmployeeLeave;
 
 
 // Using \App\Models\Request instead of Request because Request is a class in Illuminate\Http\Request
@@ -24,26 +26,43 @@ class RequestController extends Controller
      */
     public function index()
     {
-        $requests = \App\Models\Request::join('employees', 'requests.employee_id', '=', 'employees.id')
-            ->select(['requests.id', 'employees.name as employee_name', 'requests.type', 'requests.start_date',
-                'requests.end_date', 'requests.status', 'requests.is_seen']);
+        $user = auth()->user();
+        $requests = \App\Models\Request::query()
+            ->join('employees', 'requests.employee_id', '=', 'employees.id')
+            ->select(['requests.id', 'employees.name as employee_name', 'requests.type', 'requests.start_date', 'requests.end_date', 'requests.status', 'requests.is_seen'])
+            ->orderByDesc('requests.id')
+            ->paginate(10);
 
-        if (!isAdmin()) {
-            $requests->where('requests.employee_id', auth()->user()->id);
+        // For sidebar: leave balances for employee, totals for admin
+        $leaveBalances = null;
+        $leaveTotals = null;
+        if ($user->hasRole('admin')) {
+            $leaveTotals = \App\Models\Request::where('status', 1)
+                ->selectRaw('type, count(*) as total')
+                ->groupBy('type')
+                ->pluck('total', 'type');
+        } else {
+            $leaveBalances = $user->leaves()->get(['leave_type', 'balance']);
         }
+
         return Inertia::render('Request/Requests', [
-            'requests' => $requests->orderBy('requests.status')
-                ->paginate(config('constants.data.pagination_count')),
+            'requests' => $requests,
+            'leaveBalances' => $leaveBalances,
+            'leaveTotals' => $leaveTotals,
         ]);
     }
 
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(): Response
     {
+        $user = auth()->user();
+        $leaveBalances = $user->leaves()->get(['leave_type', 'balance']);
+        $leaveTypes = ['Annual Leave', 'Emergency Leave', 'Sick Leave'];
         return Inertia::render('Request/RequestCreate', [
-            'types' => ['complaint', 'payment', 'leave', 'other'],
+            'types' => $leaveTypes,
+            'leaveBalances' => $leaveBalances,
         ]);
     }
 
@@ -53,6 +72,16 @@ class RequestController extends Controller
     public function store(Request $request)
     {
         $req = $this->validationServices->validateRequestCreationDetails($request);
+
+        $employee = auth()->user();
+        // Block if not enough balance (except sick leave)
+        if ($req['type'] !== 'Sick Leave') {
+            $leave = EmployeeLeave::where('employee_id', $employee->id)
+                ->where('leave_type', $req['type'])->first();
+            if (!$leave || $leave->balance < 1) {
+                return back()->withErrors(['leave' => 'Insufficient leave balance for ' . $req['type']]);
+            }
+        }
         return $this->requestServices->createRequest($req, $request);
     }
 
@@ -81,6 +110,16 @@ class RequestController extends Controller
     public function update(Request $request, string $id)
     {
         $this->requestServices->updateRequest($request, $id);
+        $leaveRequest = \App\Models\Request::findOrFail($id);
+        // If approving and not sick leave, deduct balance
+        if ($request->input('status') == 1 && $leaveRequest->type !== 'Sick Leave') {
+            $leave = EmployeeLeave::where('employee_id', $leaveRequest->employee_id)
+                ->where('leave_type', $leaveRequest->type)->first();
+            if ($leave && $leave->balance > 0) {
+                $leave->balance -= 1;
+                $leave->save();
+            }
+        }
     }
 
     /**

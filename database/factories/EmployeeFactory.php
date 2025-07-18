@@ -28,10 +28,7 @@ class EmployeeFactory extends Factory
             'email_verified_at' => now(),
             'password' => '$2y$10$R3ByxXtWwnuJfmTmPf.LfOxt2h5xDF2GmdCuoRJDOgMqVWZwkOGjK', // SoftKittyWarmKittyLittleBallOfFurr
             'remember_token' => Str::random(10),
-            'department_id' => fake()->numberBetween(1, 4),
-            'branch_id' => fake()->numberBetween(1, 2),
             'hired_on' => Carbon::createFromTimestamp(mt_rand(Carbon::now()->subYears(3)->timestamp, Carbon::now()->timestamp))->format('Y-m-d'),
-            'is_remote' => false,
         ];
     }
 

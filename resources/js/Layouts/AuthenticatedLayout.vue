@@ -92,6 +92,11 @@ function changeLanguage(locale){
                     <TableIcon class="text-gray-500 dark:text-gray-100"/>
                 </SidebarListItem>
 
+                <SidebarListItem :item-name="__('Reports')" link="reports.index"
+                                 :activeLinks="['reports.index']">
+                    <TableIcon class="text-gray-500 dark:text-gray-100"/>
+                </SidebarListItem>
+
             </ul>
 
             <ul v-else class="space-y-2 font-medium mb-4">
@@ -309,7 +314,6 @@ function changeLanguage(locale){
                             </ResponsiveNavLink>
 
                             <ResponsiveNavLink :href="route('employees.index')">Employees</ResponsiveNavLink>
-                            <ResponsiveNavLink :href="route('branches.index')">Organization</ResponsiveNavLink>
                             <ResponsiveNavLink :href="route('requests.index')">Requests</ResponsiveNavLink>
                             <ResponsiveNavLink :href="route('calendar.index')">Calendar</ResponsiveNavLink>
                             <ResponsiveNavLink :href="route('attendances.index')">Attendance</ResponsiveNavLink>

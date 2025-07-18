@@ -3,10 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\ArchivedEmployee;
-use App\Models\Branch;
 use App\Models\Department;
 use App\Models\Employee;
-use App\Models\Position;
 use App\Models\Shift;
 use App\Services\EmployeeServices;
 use App\Services\ValidationServices;
@@ -14,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
+use Spatie\Permission\Models\Role;
 
 class EmployeeController extends Controller
 {
@@ -81,10 +80,7 @@ class EmployeeController extends Controller
     public function create(): Response
     {
         return Inertia::render('Employee/EmployeeCreate', [
-            'departments' => Department::select(['id', 'name'])->get(),
-            'branches' => Branch::select(['id', 'name'])->get(),
-            'positions' => Position::select(['id', 'name'])->get(),
-            'roles' => DB::select('SELECT name FROM roles'),
+            'roles' => Role::whereIn('name', ['admin', 'employee'])->get(['id', 'name']),
             'shifts' => Shift::get(),
         ]);
     }
@@ -109,15 +105,10 @@ class EmployeeController extends Controller
     public function show(string $id): Response
     {
         return Inertia::render('Employee/EmployeeView', [
-            'employee' => Employee::with("salaries", "roles", 'employeeShifts.shift', 'employeePositions.position', 'manages')
-                ->leftjoin('departments', 'employees.department_id',
-                    '=', 'departments.id')
-                ->leftJoin('branches', 'employees.branch_id', '=', 'branches.id')
+            'employee' => Employee::with(["salaries", "roles", 'employeeShifts.shift', 'manages'])
                 ->where('employees.id', $id)
                 ->select('employees.id', 'employees.name', 'employees.phone', 'employees.national_id', 'employees.email',
-                    'employees.address', 'employees.bank_acc_no', 'departments.name as department_name',
-                    'departments.id as department_id', 'branches.id as branch_id', 'branches.name as branch_name',
-                    'employees.hired_on', 'employees.is_remote')
+                    'employees.address', 'employees.bank_acc_no', 'employees.hired_on')
                 ->first(),
         ]);
     }
@@ -128,19 +119,12 @@ class EmployeeController extends Controller
     public function edit(string $id)
     {
         return Inertia::render('Employee/EmployeeEdit', [
-            'employee' => Employee::with("salaries", "roles", 'employeeShifts.shift', 'employeePositions.position')
-                ->leftjoin('departments', 'employees.department_id',
-                    '=', 'departments.id')
-                ->leftJoin('branches', 'employees.branch_id', '=', 'branches.id')
+            'employee' => Employee::with(["salaries", "roles", 'employeeShifts.shift'])
                 ->where('employees.id', $id)
                 ->select('employees.id', 'employees.name', 'employees.phone', 'employees.national_id', 'employees.email',
-                    'employees.address', 'employees.bank_acc_no', 'employees.hired_on', 'departments.name as department_name',
-                    'departments.id as department_id', 'branches.id as branch_id', 'branches.name as branch_name', 'employees.is_remote')
+                    'employees.address', 'employees.bank_acc_no', 'employees.hired_on')
                 ->first(),
-            'departments' => Department::select(['id', 'name'])->get(),
-            'branches' => Branch::select(['id', 'name'])->get(),
-            'positions' => Position::select(['id', 'name'])->get(),
-            'roles' => DB::select('SELECT name FROM roles'),
+            'roles' => Role::whereIn('name', ['admin', 'employee'])->get(['id', 'name']),
             'shifts' => Shift::get(),
         ]);
     }

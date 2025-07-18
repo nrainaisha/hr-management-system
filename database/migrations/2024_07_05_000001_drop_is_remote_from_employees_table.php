@@ -11,10 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('managers', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('employee_id')->constrained()->onDelete('cascade');
-            $table->timestamps();
+        Schema::table('employees', function (Blueprint $table) {
+            $table->dropColumn('is_remote');
         });
     }
 
@@ -23,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('managers');
+        Schema::table('employees', function (Blueprint $table) {
+            $table->boolean('is_remote')->default(false);
+        });
     }
-};
+}; 

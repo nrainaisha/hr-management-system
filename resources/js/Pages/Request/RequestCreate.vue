@@ -14,9 +14,12 @@ import Card from "@/Components/Card.vue";
 import {inject, watch} from "vue";
 import {__} from "@/Composables/useTranslations.js";
 
-defineProps({
+const props = defineProps({
     types: Array,
-});
+    leaveBalances: Array,
+})
+
+const leaveTypes = ['Annual Leave', 'Emergency Leave', 'Sick Leave'];
 
 const form = useForm({
     type: '',
@@ -54,68 +57,88 @@ const submitForm = () => {
 
 </script>
 <template>
-    <Head :title="__('Request Create')"/>
+    <Head :title="__('Request Leave')"/>
     <AuthenticatedLayout>
         <template #tabs>
             <ReqTabs />
         </template>
-        <div class="py-8">
-            <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                <Card class="!mt-0">
-                    <h1 class="card-header !mb-4">{{__('Create a Request')}}</h1>
-                    <form @submit.prevent="submitForm">
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <InputLabel for="type_id" :value="__('Type')"/>
-                                <select id="manager_id" class="fancy-selector" v-model="form.type">
-                                    <option selected value="">{{__('Choose a Request Type')}}</option>
-                                    <option v-for="type in types" :key="type.id" :value="type">
-                                        {{ type }}
-                                    </option>
-                                </select>
-                                <InputError class="mt-2" :message="form.errors.type"/>
+        <div class="py-10 min-h-screen">
+            <div class="max-w-6xl mx-auto px-4 flex flex-col md:flex-row gap-10">
+                <!-- Sidebar: Leave Balances -->
+                <aside class="w-full md:w-72 bg-gray-800/80 backdrop-blur border border-gray-700 rounded-2xl p-6 shadow-xl mb-8 md:mb-0 flex-shrink-0">
+                    <h2 class="text-base font-bold text-gray-200 mb-5 tracking-wide border-b border-gray-700 pb-2">{{ __('My Leave Balances') }}</h2>
+                    <ul class="space-y-4 mt-4">
+                        <li v-for="type in ['Annual Leave', 'Emergency Leave', 'Sick Leave']" :key="type" class="flex items-center justify-between">
+                            <span class="font-semibold flex items-center gap-2 text-gray-300">
+                              <svg v-if="type==='Annual Leave'" class="h-4 w-4 text-green-400" fill="currentColor" viewBox="0 0 20 20"><circle cx="10" cy="10" r="10"/></svg>
+                              <svg v-else-if="type==='Emergency Leave'" class="h-4 w-4 text-red-400" fill="currentColor" viewBox="0 0 20 20"><rect width="20" height="20" rx="4"/></svg>
+                              <svg v-else class="h-4 w-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><ellipse cx="10" cy="10" rx="10" ry="7"/></svg>
+                              {{ type }}
+                            </span>
+                            <span :class="(type==='Sick Leave' || (leaveBalances && leaveBalances.find(l => l.leave_type === type)?.balance)) ? 'bg-green-900 text-green-200' : 'bg-gray-700 text-gray-400'" class="px-3 py-0.5 rounded-full text-xs font-bold min-w-[2rem] text-center shadow-sm">
+                              <template v-if="type === 'Sick Leave'">Unlimited</template>
+                              <template v-else>
+                                {{ leaveBalances && leaveBalances.find(l => l.leave_type === type) ? leaveBalances.find(l => l.leave_type === type).balance : 0 }}
+                              </template>
+                            </span>
+                        </li>
+                    </ul>
+                </aside>
+                <!-- Main Content -->
+                <main class="flex-1">
+                    <div class="bg-gray-800/90 rounded-2xl shadow-xl border border-gray-700 p-8">
+                        <h1 class="text-2xl font-extrabold text-gray-100 tracking-tight mb-6">{{__('Request Leave')}}</h1>
+                        <form @submit.prevent="submitForm" class="space-y-8">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div>
+                                    <InputLabel for="type_id" :value="__('Type of Leave')" class="mb-2"/>
+                                    <select id="type_id" class="w-full rounded-lg bg-gray-900 text-gray-100 border border-gray-700 px-4 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none" v-model="form.type">
+                                        <option selected value="">{{__('Choose a Leave Type')}}</option>
+                                        <option v-for="type in leaveTypes" :key="type" :value="type">
+                                            {{ type }}
+                                        </option>
+                                    </select>
+                                    <InputError class="mt-2" :message="form.errors.type"/>
+                                </div>
+                                <div>
+                                    <InputLabel for="date" :value="__('Date (Range selection is available)')" class="mb-2"/>
+                                    <VueDatePicker
+                                        id="date"
+                                        v-model="form.date"
+                                        class="w-full rounded-lg bg-gray-900 text-gray-100 border border-gray-700 px-4 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                                        :class="{'border border-red-500': form.errors.date}"
+                                        :placeholder="__('Select Date...')"
+                                        :enable-time-picker="false"
+                                        :min-date="form.type === 'leave'? dayjs().tz().format() : ''"
+                                        :dark="inject('isDark').value"
+                                        range
+                                        required
+                                    ></VueDatePicker>
+                                    <InputError class="mt-2" :message="form.errors.date"/>
+                                </div>
                             </div>
                             <div>
-                                <InputLabel for="date" :value="__('Date (Range selection is available)')"/>
-                                <VueDatePicker
-                                    id="date"
-                                    v-model="form.date"
-                                    class="py-1 block w-full"
-                                    :class="{'border border-red-500': form.errors.date}"
-                                    :placeholder="__('Select Date...')"
-                                    :enable-time-picker="false"
-                                    :min-date="form.type === 'leave'? dayjs().tz().format() : ''"
-                                    :dark="inject('isDark').value"
-                                    range
-                                    required
-                                ></VueDatePicker>
-                                <InputError class="mt-2" :message="form.errors.date"/>
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-1 gap-4 mt-4">
-                            <div>
-                                <InputLabel for="message" :value="__('Message')"/>
-                                <TextInput
+                                <InputLabel for="message" :value="__('Message')" class="mb-2"/>
+                                <textarea
                                     id="message"
-                                    type="text"
-                                    class="mt-1 block w-full"
+                                    class="w-full rounded-lg bg-gray-900 text-gray-100 border border-gray-700 px-4 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none"
                                     :class="{'border border-red-500': form.errors.message}"
                                     v-model="form.message"
                                     autocomplete="off"
+                                    rows="3"
                                     :placeholder="__('I will be absent for 3 days because I\'m sick.')"
                                 />
                                 <InputError class="mt-2" :message="form.errors.message"/>
                             </div>
-                        </div>
-                        <div class="flex items-center justify-end mt-4">
-                            <PrimaryButton class="ltr:ml-4 rtl:mr-4" :class="{ 'opacity-25': form.processing }"
-                                           :disabled="form.processing">
-                                {{__('Initiate Request')}}
-                            </PrimaryButton>
-                        </div>
-                    </form>
-                </Card>
-
+                            <div class="flex items-center justify-end">
+                                <PrimaryButton class="px-6 py-2 rounded-full font-semibold text-base bg-blue-600 hover:bg-blue-700 text-white shadow transition ltr:ml-4 rtl:mr-4" :class="{ 'opacity-25': form.processing }"
+                                               :disabled="form.processing">
+                                    {{__('Initiate Request')}}
+                                </PrimaryButton>
+                            </div>
+                        </form>
+                    </div>
+                </main>
             </div>
         </div>
     </AuthenticatedLayout>

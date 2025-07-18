@@ -24,8 +24,6 @@ return new class extends Migration
             $table->string('bank_acc_no')->nullable();
             $table->date('hired_on');
             $table->boolean('is_remote')->default(false);
-            $table->foreignId('branch_id')->nullable()->constrained()->onDelete('set null');
-            $table->foreignId('department_id')->nullable()->constrained()->onDelete('set null');
             $table->rememberToken();
             $table->timestamps();
         });

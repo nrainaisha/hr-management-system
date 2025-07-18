@@ -36,6 +36,10 @@ class TaskController extends Controller
     public function update(Request $request, $id)
     {
         $task = Task::findOrFail($id);
+        // Only allow if the logged-in user is assigned to this task's schedule or is an admin
+        if ($task->schedule->employee_id !== $request->user()->id && !$request->user()->hasRole('admin')) {
+            abort(403, 'Unauthorized');
+        }
         $validated = $request->validate([
             'title' => 'sometimes|required|string|max:255',
             'description' => 'nullable|string',

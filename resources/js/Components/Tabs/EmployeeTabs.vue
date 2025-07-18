@@ -15,9 +15,6 @@ import GoBackNavLink from "@/Components/GoBackNavLink.vue";
         <NavLink :href="route('employees.find', { id: 1 })" :active="route().current('employees.find') || route().current('employees.show')">
             {{__('Find an Employee')}}
         </NavLink>
-        <NavLink :href="route('employees.archived')" :active="route().current('employees.archived')">
-            {{__('Archived Employee')}}
-        </NavLink>
     </div>
     <div v-else class="space-x-8 sm:flex">
         <NavLink :href="route('my-profile', {id: $page.props.auth.user.id})" active>

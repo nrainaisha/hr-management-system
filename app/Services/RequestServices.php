@@ -40,7 +40,12 @@ class RequestServices
         $empReq->update($req);
 
         // Send Email to Employee informing them of the status update.
-        Mail::to($empReq->employee->email)->send(new RequestStatusUpdated($empReq));
+        try {
+            Mail::to($empReq->employee->email)->send(new RequestStatusUpdated($empReq));
+        } catch (\Exception $e) {
+            // Log the error but do not block the approval
+            \Log::error('Mail send failed: ' . $e->getMessage());
+        }
     }
 
 
