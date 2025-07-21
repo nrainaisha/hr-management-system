@@ -68,6 +68,9 @@ class Employee extends Authenticatable
     public function salary()
     {
         $salary = $this->salaries()->where('end_date', null)->first();
+        if (!$salary) {
+            return [null, 0, null];
+        }
         return [$salary->currency, $salary->salary, $salary->start_date];
     }
 
@@ -278,6 +281,11 @@ class Employee extends Authenticatable
     public function leaves()
     {
         return $this->hasMany(EmployeeLeave::class);
+    }
+
+    public function clients()
+    {
+        return $this->hasMany(Client::class);
     }
 
 

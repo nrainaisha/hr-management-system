@@ -27,6 +27,32 @@ const shiftTimes = [
   { label: 'Night', start: '15:00', end: '00:00' }
 ];
 
+const taskOptions = [
+  {
+    title: 'Cleaning',
+    descriptions: ['Bathroom cleaning', 'Equipment cleaning', 'Floor Cleaning']
+  },
+  {
+    title: 'Services',
+    descriptions: ['Weekly services']
+  },
+  {
+    title: 'Inspection',
+    descriptions: ['Back Machine', 'Chest Machine', 'Cardio equipment', 'Dumbbell', 'Leg Machine', 'Arm Machine']
+  },
+  {
+    title: 'Counter',
+    descriptions: ['Manage Registration']
+  }
+];
+
+const CUSTOM_OPTION = 'Custom...';
+
+function getDescriptions(selectedTitle) {
+  const found = taskOptions.find(opt => opt.title === selectedTitle);
+  return found ? found.descriptions : [];
+}
+
 const formattedSelectedDate = computed(() => {
   return dayjs(selectedDate.value).format('dddd, D MMMM YYYY');
 });
@@ -62,13 +88,17 @@ function getStaffInitials(staffObj) {
 }
 
 async function addTask(scheduleId) {
-  if (!newTask.value[scheduleId]?.title) return;
+  const task = newTask.value[scheduleId];
+  if (!task?.title) return;
+  let title = task.title === CUSTOM_OPTION ? task.customTitle : task.title;
+  let description = task.title === CUSTOM_OPTION ? task.customDescription : task.description || '';
+  if (!title) return;
   await axios.post('/tasks', {
     schedule_id: scheduleId,
-    title: newTask.value[scheduleId].title,
-    description: newTask.value[scheduleId].description || '',
+    title,
+    description,
   });
-  newTask.value[scheduleId] = { title: '', description: '' };
+  newTask.value[scheduleId] = { title: '', description: '', customTitle: '', customDescription: '' };
   const res = await axios.get('/tasks', { params: { schedule_id: scheduleId } });
   tasks.value[scheduleId] = res.data.tasks;
 }
@@ -113,45 +143,78 @@ async function addTask(scheduleId) {
                 <span class="text-blue-200 font-semibold" :title="getStaffName(assignments[shiftIdx])">{{ getStaffName(assignments[shiftIdx]) }}</span>
               </div>
               <div v-else class="italic text-gray-500 bg-gray-800 rounded px-4 py-1">No Staff Assigned</div>
-            </div>
+          </div>
             <div class="flex-1">
-              <div v-if="assignments[shiftIdx + '_id']">
-                <div v-if="tasks[assignments[shiftIdx + '_id']] && tasks[assignments[shiftIdx + '_id']].length">
+                    <div v-if="assignments[shiftIdx + '_id']">
+                      <div v-if="tasks[assignments[shiftIdx + '_id']] && tasks[assignments[shiftIdx + '_id']].length">
                   <ul class="space-y-3 mb-6">
                     <li v-for="task in tasks[assignments[shiftIdx + '_id']]" :key="task.id" class="flex items-center bg-gray-800 rounded-lg px-4 py-3 text-base group border border-gray-700">
                       <span class="font-bold text-gray-100 mr-2">{{ task.title }}</span>
-                      <span v-if="task.description" class="text-gray-400 mr-2">- {{ task.description }}</span>
+                            <span v-if="task.description" class="text-gray-400 mr-2">- {{ task.description }}</span>
                       <span class="ml-auto text-xs font-semibold px-3 py-1 rounded-full shadow"
-                            :class="task.status === 'completed' ? 'bg-green-800 text-green-100' : 'bg-yellow-800 text-yellow-100'">
-                        {{ task.status === 'completed' ? 'Completed' : 'Pending' }}
+                            :class="{
+                              'bg-green-800 text-green-100': task.status === 'completed',
+                              'bg-red-800 text-red-100': task.status === 'not_completed',
+                              'bg-yellow-800 text-yellow-100': task.status !== 'completed' && task.status !== 'not_completed'
+                            }">
+                        {{
+                          task.status === 'completed'
+                            ? 'Completed'
+                            : task.status === 'not_completed'
+                              ? 'Not Completed'
+                              : 'Pending'
+                        }}
                       </span>
-                    </li>
-                  </ul>
-                </div>
+                          </li>
+                        </ul>
+                      </div>
                 <div class="flex flex-col gap-4 bg-gray-800 rounded-xl p-5 border border-gray-700">
                   <div class="font-semibold text-gray-200 mb-1 text-lg">Add New Task</div>
                   <div class="flex flex-col md:flex-row md:items-end gap-4">
                     <div class="flex-1 flex flex-col gap-1">
                       <label class="text-gray-300 text-sm font-semibold mb-1" :for="'task-title-' + shiftIdx">Task Title</label>
-                      <input
+                      <select
                         :id="'task-title-' + shiftIdx"
                         v-model="(newTask[assignments[shiftIdx + '_id']] ??= { title: '', description: '' }).title"
-                        placeholder="Enter task title"
-                        class="border border-gray-700 bg-gray-900 text-gray-100 rounded-lg px-4 py-2 text-base focus:ring-2 focus:ring-blue-400 focus:outline-none shadow-sm w-full"
+                        class="border border-gray-700 bg-gray-900 text-gray-100 rounded-lg px-4 py-2 mb-4 text-base focus:ring-2 focus:ring-blue-400 focus:outline-none shadow-sm w-full"
                         aria-label="Task title"
+                      >
+                        <option value="" disabled>Select task title</option>
+                        <option v-for="opt in taskOptions" :key="opt.title" :value="opt.title">{{ opt.title }}</option>
+                        <option :value="CUSTOM_OPTION">Custom...</option>
+                      </select>
+                      <input
+                        v-if="newTask[assignments[shiftIdx + '_id']]?.title === CUSTOM_OPTION"
+                        v-model="newTask[assignments[shiftIdx + '_id']].customTitle"
+                        placeholder="Enter custom task title"
+                        class="border border-gray-700 bg-gray-900 text-gray-100 rounded-lg px-4 py-2 text-base focus:ring-2 focus:ring-blue-400 focus:outline-none shadow-sm w-full mb-2"
                       />
-                    </div>
-                    <div class="flex-1 flex flex-col gap-1">
+                                       
                       <label class="text-gray-300 text-sm font-semibold mb-1" :for="'task-desc-' + shiftIdx">Description</label>
-                      <textarea
+                      <select
                         :id="'task-desc-' + shiftIdx"
                         v-model="(newTask[assignments[shiftIdx + '_id']] ??= { title: '', description: '' }).description"
-                        placeholder="Describe the task (optional)"
-                        rows="2"
-                        class="border border-gray-700 bg-gray-900 text-gray-100 rounded-lg px-4 py-2 text-base resize-none focus:ring-2 focus:ring-blue-400 focus:outline-none shadow-sm w-full"
+                        :disabled="newTask[assignments[shiftIdx + '_id']]?.title === CUSTOM_OPTION"
+                        class="border border-gray-700 bg-gray-900 text-gray-100 rounded-lg px-4 py-2 text-base focus:ring-2 focus:ring-blue-400 focus:outline-none shadow-sm w-full"
                         aria-label="Task description"
+                      >
+                        <option value="" disabled>Select description</option>
+                        <option
+                          v-for="desc in getDescriptions(newTask[assignments[shiftIdx + '_id']]?.title)"
+                          :key="desc"
+                          :value="desc"
+                        >{{ desc }}</option>
+                      </select>
+                      <textarea
+                        v-if="newTask[assignments[shiftIdx + '_id']]?.title === CUSTOM_OPTION"
+                        v-model="newTask[assignments[shiftIdx + '_id']].customDescription"
+                        placeholder="Enter custom description"
+                        rows="2"
+                        class="border border-gray-700 bg-gray-900 text-gray-100 rounded-lg px-4 py-2 text-base resize-none focus:ring-2 focus:ring-blue-400 focus:outline-none shadow-sm w-full mt-2"
+                        aria-label="Custom task description"
                       />
                     </div>
+   
                     <button
                       @click="addTask(assignments[shiftIdx + '_id'])"
                       :disabled="!(newTask[assignments[shiftIdx + '_id']] && newTask[assignments[shiftIdx + '_id']].title)"

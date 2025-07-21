@@ -12,7 +12,9 @@ class ScheduleController extends Controller
 {
 
     public function admin() {
-        $staffList = Employee::select('id', 'name')->get();
+        $staffList = Employee::whereDoesntHave('roles', function($q) {
+            $q->where('name', 'owner');
+        })->select('id', 'name')->get();
         // You can also filter by role/active status if needed
         return Inertia::render('Schedule/AdminSchedule', [
             'staffList' => $staffList,

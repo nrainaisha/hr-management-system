@@ -27,11 +27,23 @@ class RequestController extends Controller
     public function index()
     {
         $user = auth()->user();
+
+        if ($user->hasRole('admin')) {
+            // Admin sees all requests
         $requests = \App\Models\Request::query()
             ->join('employees', 'requests.employee_id', '=', 'employees.id')
             ->select(['requests.id', 'employees.name as employee_name', 'requests.type', 'requests.start_date', 'requests.end_date', 'requests.status', 'requests.is_seen'])
             ->orderByDesc('requests.id')
             ->paginate(10);
+        } else {
+            // Employee sees only their own requests
+            $requests = \App\Models\Request::query()
+                ->where('employee_id', $user->id)
+                ->join('employees', 'requests.employee_id', '=', 'employees.id')
+                ->select(['requests.id', 'employees.name as employee_name', 'requests.type', 'requests.start_date', 'requests.end_date', 'requests.status', 'requests.is_seen'])
+                ->orderByDesc('requests.id')
+                ->paginate(10);
+        }
 
         // For sidebar: leave balances for employee, totals for admin
         $leaveBalances = null;

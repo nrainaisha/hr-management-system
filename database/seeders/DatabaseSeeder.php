@@ -15,6 +15,10 @@ use App\Services\CommonServices;
 use Carbon\Carbon;
 use Carbon\CarbonImmutable;
 use Spatie\Permission\Models\Role;
+use App\Models\Client;
+use App\Models\Attendance;
+use App\Models\Schedule;
+use App\Models\Task;
 
 class DatabaseSeeder extends Seeder
 {
@@ -47,6 +51,9 @@ class DatabaseSeeder extends Seeder
             Role::firstOrCreate(['name' => $role]);
         }
 
+        // Add owner role
+        Role::firstOrCreate(['name' => 'owner']);
+
         // Create Admin (Siti Noraini)
         $admin = Employee::create([
             'name' => 'Siti Noraini Binti Ahmad',
@@ -57,6 +64,17 @@ class DatabaseSeeder extends Seeder
             'password' => bcrypt('password'),
         ]);
         $admin->assignRole('admin');
+
+        // Create Owner User
+        $owner = Employee::create([
+            'name' => 'Owner User',
+            'email' => 'owner@myhrsolutions.my',
+            'phone' => '019-8888888',
+            'national_id' => '800101015522',
+            'hired_on' => '2024-01-01',
+            'password' => bcrypt('password'),
+        ]);
+        $owner->assignRole('owner');
 
         // Create 3 Employees
         $employee1 = Employee::create([
@@ -115,6 +133,139 @@ class DatabaseSeeder extends Seeder
         // Requests, Calendar Items
         $this->seedRequests();
         $this->seedCalendarItems();
+
+        // Seed complete attendance for every employee for July 1-22 (working days only)
+        $start = Carbon::create(null, 7, 1);
+        $end = Carbon::create(null, 7, 22);
+        $commonServices = new CommonServices();
+        foreach (Employee::all() as $employee) {
+            $date = $start->copy();
+            while ($date->lte($end)) {
+                if (!$commonServices->isDayOff($date->toDateString())) {
+                    Attendance::create([
+                        'employee_id' => $employee->id,
+                        'date' => $date->toDateString(),
+                        'status' => 'on_time',
+                        'sign_in_time' => '08:00:00',
+                        'sign_off_time' => '17:00:00',
+                        'notes' => 'Seeded for demo',
+                    ]);
+                }
+                $date->addDay();
+            }
+        }
+
+        // Seed random clients for each employee
+        foreach ([$employee1, $employee2, $employee3] as $employee) {
+            // Removed shift assignment
+            // Seed random clients for each employee
+            $clientCount = rand(3, 8);
+            for ($i = 0; $i < $clientCount; $i++) {
+                Client::create([
+                    'employee_id' => $employee->id,
+                    'name' => fake()->name(),
+                    'contact_info' => fake()->email(),
+                ]);
+            }
+        }
+
+        // Truncate schedules and tasks
+        Schedule::truncate();
+        Task::truncate();
+
+        // Truncate employee leaves
+        \App\Models\EmployeeLeave::truncate();
+
+        $start = Carbon::parse('2025-06-30');
+        $end = Carbon::parse('2025-07-22');
+        $taskOptions = [
+            [
+                'title' => 'Cleaning',
+                'descriptions' => ['Bathroom cleaning', 'Equipment cleaning', 'Floor Cleaning']
+            ],
+            [
+                'title' => 'Services',
+                'descriptions' => ['Weekly services']
+            ],
+            [
+                'title' => 'Inspection',
+                'descriptions' => ['Back Machine', 'Chest Machine', 'Cardio equipment', 'Dumbbell', 'Leg Machine', 'Arm Machine']
+            ],
+            [
+                'title' => 'Counter',
+                'descriptions' => ['Manage Registration']
+            ]
+        ];
+        $shiftTypes = ['morning', 'evening'];
+
+        $employees = Employee::whereDoesntHave('roles', function($q) {
+            $q->where('name', 'owner');
+        })->get();
+        $employeeCount = $employees->count();
+        $employeeIds = $employees->pluck('id')->toArray();
+
+        $allSlots = [];
+        $date = $start->copy();
+        while ($date->lte($end)) {
+            foreach ($shiftTypes as $shiftType) {
+                $allSlots[] = [
+                    'date' => $date->toDateString(),
+                    'shift_type' => $shiftType,
+                    'week_start' => $date->copy()->startOfWeek()->toDateString(),
+                ];
+            }
+            $date->addDay();
+        }
+
+        // Assign slots round-robin
+        $slotAssignments = [];
+        foreach ($allSlots as $i => $slot) {
+            $employeeIdx = $i % $employeeCount;
+            $employeeId = $employeeIds[$employeeIdx];
+            $slotAssignments[] = array_merge($slot, ['employee_id' => $employeeId]);
+        }
+
+        // Create schedules and tasks
+        foreach ($slotAssignments as $slot) {
+            $schedule = Schedule::create([
+                'employee_id' => $slot['employee_id'],
+                'shift_type' => $slot['shift_type'],
+                'week_start' => $slot['week_start'],
+                'day' => $slot['date'],
+            ]);
+            $taskOpt = $taskOptions[array_rand($taskOptions)];
+            $title = $taskOpt['title'];
+            $description = $taskOpt['descriptions'][array_rand($taskOpt['descriptions'])];
+            // Status logic
+            if ($slot['employee_id'] == 2) {
+                $status = 'completed';
+            } elseif ($slot['employee_id'] == 3) {
+                $status = rand(1, 10) <= 9 ? 'completed' : 'not_completed';
+            } else {
+                $status = rand(1, 10) <= 6 ? 'completed' : 'not_completed';
+            }
+            Task::create([
+                'schedule_id' => $schedule->id,
+                'title' => $title,
+                'description' => $description,
+                'status' => $status,
+            ]);
+        }
+
+        // Set leave balances for all staff (excluding owner)
+        $staff = Employee::whereDoesntHave('roles', function($q) {
+            $q->where('name', 'owner');
+        })->get();
+        foreach ($staff as $employee) {
+            \App\Models\EmployeeLeave::updateOrCreate(
+                ['employee_id' => $employee->id, 'leave_type' => 'Annual Leave'],
+                ['balance' => 10]
+            );
+            \App\Models\EmployeeLeave::updateOrCreate(
+                ['employee_id' => $employee->id, 'leave_type' => 'Emergency Leave'],
+                ['balance' => 5]
+            );
+        }
     }
 
     private function seedGlobals(): void
@@ -144,7 +295,10 @@ class DatabaseSeeder extends Seeder
 
     private function seedRequests(): void
     {
-        foreach (Employee::all() as $employee) {
+        $employees = Employee::whereDoesntHave('roles', function($q) {
+            $q->where('name', 'owner');
+        })->get();
+        foreach ($employees as $employee) {
             Request::create([
                 'employee_id' => $employee->id,
                 'type' => fake()->randomElement(['Annual Leave', 'Emergency Leave', 'Sick Leave']),

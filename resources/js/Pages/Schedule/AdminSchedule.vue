@@ -243,9 +243,9 @@ async function resetAssignments() {
                       <template v-if="isShiftAssigned(day, shiftIdx)">
                         <div class="flex items-center justify-center gap-1 w-full" style="width: 120px;">
                           <svg xmlns='http://www.w3.org/2000/svg' class='h-4 w-4 text-green-300' fill='none' viewBox='0 0 24 24' stroke='currentColor'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M5.121 17.804A13.937 13.937 0 0112 15c2.5 0 4.847.655 6.879 1.804M15 11a3 3 0 11-6 0 3 3 0 016 0z' /></svg>
-                          <span class="text-gray-100 font-semibold text-xs text-center" style="word-break: break-word; max-height: 2.5em; line-height: 1.2; overflow: hidden; white-space: normal; width: 90px; display: inline-block;">
-                            {{ getStaffName(day, shiftIdx) }}
-                          </span>
+                          <span class="text-gray-100 font-semibold text-xs text-center" style="word-break: break-word; max-height: 3.6em; line-height: 1.2; overflow: hidden; white-space: normal; width: 90px; display: inline-block;">
+                        {{ getStaffName(day, shiftIdx) }}
+                      </span>
                         </div>
                       </template>
                       <template v-else>
@@ -302,7 +302,7 @@ async function resetAssignments() {
                   autofocus
                 >
                   <option value="">Select Staff</option>
-                  <option v-for="staff in props.staffList" :key="staff.id" :value="staff.id">{{ staff.name }}</option>
+                  <option v-for="staff in props.staffList.filter(s => s.id !== 1)" :key="staff.id" :value="staff.id">{{ staff.name }}</option>
                 </select>
                 <FlexButton
                   :text="'Assign'"

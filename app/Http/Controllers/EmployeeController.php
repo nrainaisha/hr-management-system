@@ -38,15 +38,20 @@ class EmployeeController extends Controller
             $sortDir = $request->sort_dir ? 'asc' : 'desc';
         }
 
-        return Inertia::render('Employee/Employees', [
-            'employees' => Employee::when($request->term, function ($query, $term) {
+        $employees = Employee::whereDoesntHave('roles', function($q) {
+            $q->where('name', 'owner');
+        })
+        ->when($request->term, function ($query, $term) {
                 $query->where('normalized_name', 'ILIKE', '%' . normalizeArabic($term) . '%')
                     ->orWhere('email', 'ILIKE', '%' . $term . '%')
                     ->orWhere('id', 'ILIKE', '%' . $term . '%')
                     ->orWhere('phone', 'ILIKE', '%' . $term . '%')
                     ->orWhere('national_id', 'ILIKE', '%' . $term . '%');
             })->orderBy($request->sort ?? 'id', $sortDir)->select(['id', 'name', 'email', 'phone', 'national_id'])
-                ->paginate(config('constants.data.pagination_count')),
+            ->paginate(config('constants.data.pagination_count'));
+
+        return Inertia::render('Employee/Employees', [
+            'employees' => $employees,
         ]);
     }
 
@@ -61,8 +66,10 @@ class EmployeeController extends Controller
             $sortDir = $request->sort_dir ? 'asc' : 'desc';
         }
 
-        return Inertia::render('Employee/ArchievedEmployees', [
-            'employees' => ArchivedEmployee::when($request->term, function ($query, $term) {
+        $employees = ArchivedEmployee::whereDoesntHave('roles', function($q) {
+            $q->where('name', 'owner');
+        })
+        ->when($request->term, function ($query, $term) {
                 $query->where('name', 'ILIKE', '%' . $term . '%')
                     ->orWhere('email', 'ILIKE', '%' . $term . '%')
                     ->orWhere('id', 'ILIKE', '%' . $term . '%')
@@ -70,7 +77,10 @@ class EmployeeController extends Controller
                     ->orWhere('national_id', 'ILIKE', '%' . $term . '%');
             })->orderBy($request->sort ?? 'released_on', $sortDir)
                 ->select(['id', 'name', 'email', 'phone', 'national_id', 'hired_on', 'released_on'])
-                ->paginate(config('constants.data.pagination_count')),
+            ->paginate(config('constants.data.pagination_count'));
+
+        return Inertia::render('Employee/ArchievedEmployees', [
+            'employees' => $employees,
         ]);
     }
 

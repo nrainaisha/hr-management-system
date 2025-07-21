@@ -29,6 +29,7 @@ class AttendanceController extends Controller
      */
     public function attendanceDashboard()
     {
+        // Remove isDayOff logic, always show attendance for every day
         return Inertia::render('Attendance/AttendanceDashboard', [
             "EmployeeStats" => auth()->user()->myStats(),
         ]);
@@ -90,7 +91,9 @@ class AttendanceController extends Controller
 
         return Inertia::render('Attendance/AttendanceCreate', [
             "dateParam" => $request->term ?? Carbon::today()->toDateString(),
-            "employees" => Employee::select(['id', 'name'])->where('hired_on', '<=', $date)->orderBy('id')->get(),
+            "employees" => Employee::whereDoesntHave('roles', function($q) {
+                $q->where('name', 'owner');
+            })->select(['id', 'name'])->where('hired_on', '<=', $date)->orderBy('id')->get(),
             "attendances" => $attendanceList,
             "attendable" => $attendable,
         ]);

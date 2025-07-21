@@ -16,7 +16,7 @@ use App\Http\Controllers\ScheduleController;
 |
 */
 
-Route::group(['middleware' => ['role:admin', 'auth']], function () {
+Route::group(['middleware' => ['role:admin|owner', 'auth']], function () {
 
     Route::get('employees/find', [\App\Http\Controllers\EmployeeController::class, 'find'])->name('employees.find');
     Route::get('employees/archived', [\App\Http\Controllers\EmployeeController::class, 'archivedIndex'])->name('employees.archived');

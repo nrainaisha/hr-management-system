@@ -9,6 +9,10 @@ class Attendance extends Model
 {
     use LogsActivity;
     protected $guarded = [];
+    protected $casts = [
+        'sign_in_time' => 'string',
+        'sign_off_time' => 'string',
+    ];
 
     public function getActivitylogOptions(): LogOptions
     {

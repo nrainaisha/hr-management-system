@@ -37,6 +37,18 @@ async function completeTask(task) {
   }
 }
 
+async function notCompleteTask(task) {
+  if (task.status === 'not_completed') return;
+  if (!confirm('Are you sure you want to mark this task as not completed?')) return;
+  try {
+    await axios.put(`/tasks/${task.id}`, { status: 'not_completed' });
+    // Update the task status locally
+    task.status = 'not_completed';
+  } catch (e) {
+    alert('Failed to update task status.');
+  }
+}
+
 onMounted(fetchTasks);
 watch(selectedDate, fetchTasks);
 </script>
@@ -85,6 +97,11 @@ watch(selectedDate, fetchTasks);
                     @click="completeTask(task)"
                     class="ml-4 px-3 py-1 rounded bg-green-600 hover:bg-green-700 text-white text-xs font-semibold focus:outline-none"
                   >Complete</button>
+                  <button
+                    v-if="task.status !== 'not_completed'"
+                    @click="notCompleteTask(task)"
+                    class="ml-2 px-3 py-1 rounded bg-red-600 hover:bg-red-700 text-white text-xs font-semibold focus:outline-none"
+                  >Not Completed</button>
                 </li>
               </ul>
               <div v-else class="text-gray-500 italic">No Task Assigned</div>
@@ -101,6 +118,11 @@ watch(selectedDate, fetchTasks);
                     @click="completeTask(task)"
                     class="ml-4 px-3 py-1 rounded bg-green-600 hover:bg-green-700 text-white text-xs font-semibold focus:outline-none"
                   >Complete</button>
+                  <button
+                    v-if="task.status !== 'not_completed'"
+                    @click="notCompleteTask(task)"
+                    class="ml-2 px-3 py-1 rounded bg-red-600 hover:bg-red-700 text-white text-xs font-semibold focus:outline-none"
+                  >Not Completed</button>
                 </li>
               </ul>
               <div v-else class="text-gray-500 italic">No Task Assigned</div>

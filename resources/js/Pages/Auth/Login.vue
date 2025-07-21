@@ -77,10 +77,10 @@ const submit = () => {
             <InputError class="mt-2" :message="form.errors.password" />
           </div>
           <div class="flex items-center justify-between text-sm text-white mt-2 mb-2 w-full">
-            <label class="flex items-center select-none">
+            <div class="flex items-center">
               <Checkbox name="remember" v-model:checked="form.remember" class="mr-2" />
               <span class="ml-2">Remember me</span>
-            </label>
+            </div>
             <Link
               v-if="canResetPassword"
               :href="route('password.request')"

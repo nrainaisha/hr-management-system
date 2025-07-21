@@ -12,6 +12,10 @@ class DashboardController extends Controller
 
     public function index()
     {
+        if (auth()->user()->hasRole('owner')) {
+            abort(403, 'Only supervisor can access this page.');
+        }
+
         $commonServices = new CommonServices();
         $isTodayOff = $commonServices->isTodayOff();
 
@@ -31,6 +35,7 @@ class DashboardController extends Controller
             "employee_stats" => auth()->user()->myStats(),
             "attendance_status" => $attendanceStatus,
             "is_today_off" => $isTodayOff,
+            "total_clients" => auth()->user()->clients()->count(),
         ]);
     }
 }

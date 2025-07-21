@@ -76,10 +76,10 @@ const submitForm = () => {
                               {{ type }}
                             </span>
                             <span :class="(type==='Sick Leave' || (leaveBalances && leaveBalances.find(l => l.leave_type === type)?.balance)) ? 'bg-green-900 text-green-200' : 'bg-gray-700 text-gray-400'" class="px-3 py-0.5 rounded-full text-xs font-bold min-w-[2rem] text-center shadow-sm">
-                              <template v-if="type === 'Sick Leave'">Unlimited</template>
-                              <template v-else>
-                                {{ leaveBalances && leaveBalances.find(l => l.leave_type === type) ? leaveBalances.find(l => l.leave_type === type).balance : 0 }}
-                              </template>
+                                <template v-if="type === 'Sick Leave'">Unlimited</template>
+                                <template v-else>
+                                    {{ leaveBalances && leaveBalances.find(l => l.leave_type === type) ? leaveBalances.find(l => l.leave_type === type).balance : 0 }}
+                                </template>
                             </span>
                         </li>
                     </ul>
@@ -117,18 +117,18 @@ const submitForm = () => {
                                     <InputError class="mt-2" :message="form.errors.date"/>
                                 </div>
                             </div>
-                            <div>
+                                <div>
                                 <InputLabel for="message" :value="__('Message')" class="mb-2"/>
                                 <textarea
-                                    id="message"
+                                        id="message"
                                     class="w-full rounded-lg bg-gray-900 text-gray-100 border border-gray-700 px-4 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none"
-                                    :class="{'border border-red-500': form.errors.message}"
-                                    v-model="form.message"
-                                    autocomplete="off"
+                                        :class="{'border border-red-500': form.errors.message}"
+                                        v-model="form.message"
+                                        autocomplete="off"
                                     rows="3"
-                                    :placeholder="__('I will be absent for 3 days because I\'m sick.')"
-                                />
-                                <InputError class="mt-2" :message="form.errors.message"/>
+                                        :placeholder="__('I will be absent for 3 days because I\'m sick.')"
+                                    />
+                                    <InputError class="mt-2" :message="form.errors.message"/>
                             </div>
                             <div class="flex items-center justify-end">
                                 <PrimaryButton class="px-6 py-2 rounded-full font-semibold text-base bg-blue-600 hover:bg-blue-700 text-white shadow transition ltr:ml-4 rtl:mr-4" :class="{ 'opacity-25': form.processing }"
@@ -137,7 +137,7 @@ const submitForm = () => {
                                 </PrimaryButton>
                             </div>
                         </form>
-                    </div>
+                </div>
                 </main>
             </div>
         </div>

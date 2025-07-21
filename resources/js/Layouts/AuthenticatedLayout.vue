@@ -54,52 +54,37 @@ function changeLanguage(locale){
                 <img src="/images/gymlogo.png" alt="Gym Logo" class="h-25 object-contain" />
             </div>
             <ul v-if="$page.props.auth.user.roles.includes('admin')" class="space-y-2 font-medium mb-4">
-                <div class="flex flex-row items-center">
-                    <div class="bg-red-500 h-px flex-grow"></div>
-                    <div class=" px-2 text-white">{{__('Admin Tools')}}</div>
-                    <div class="bg-red-500 h-px flex-grow"></div>
-                </div>
-
-                <SidebarListItem :item-name="__('My Dashboard')" :hasBadge="false" link="dashboard.index"
+                <SidebarListItem :item-name="__('Dashboard')" link="dashboard.index"
                                  :active-links="['dashboard.index']">
                     <RocketIcon class="text-gray-100"/>
                 </SidebarListItem>
-
-                <SidebarListItem :item-name="__('Employees')" :hasBadge="true" badge="number"
-                                 :badge-content="$page.props.ui.empCount.toString() ?? '?'"
-                                 link="employees.index"
+                <SidebarListItem :item-name="__('Employees')" link="employees.index"
                                  :active-links="['employees.index', 'employees.create', 'employees.show',
                                  'employees.find', 'employees.edit', 'employees.archived']"
                 >
                     <EmployeeIcon class="text-gray-500 dark:text-gray-100"/>
                 </SidebarListItem>
-
-
-                <SidebarListItem :item-name="__('Requests')" :hasBadge="($page.props.ui.reqCount.toString() !== '0')"
-                                 badge="number" :badge-content="$page.props.ui.reqCount.toString() ?? '?'"
-                                 link="requests.index" :active-links="['requests.index', 'requests.create',
-                 'requests.show', 'requests.edit']">
+                <SidebarListItem :item-name="__('Requests')" link="requests.index"
+                                 :active-links="['requests.index', 'requests.create', 'requests.show', 'requests.edit']">
                     <MessageIcon class="text-gray-500 dark:text-gray-100"/>
                 </SidebarListItem>
-
                 <SidebarListItem :item-name="__('Schedule')" link="schedule.admin"
                                  :activeLinks="['schedule.admin']">
                     <CalendarIcon class="text-gray-500 dark:text-gray-100"/>
                 </SidebarListItem>
-
                 <SidebarListItem :item-name="__('Attendance')" link="attendances.index"
                                  :activeLinks="['attendance.dashboard', 'attendance.show', 'attendances.index', 'attendances.create']">
                     <TableIcon class="text-gray-500 dark:text-gray-100"/>
                 </SidebarListItem>
-
-                <SidebarListItem :item-name="__('Reports')" link="reports.index"
-                                 :activeLinks="['reports.index']">
-                    <TableIcon class="text-gray-500 dark:text-gray-100"/>
-                </SidebarListItem>
-
+                <li>
+                    <button class="flex items-center p-2 py-4 rounded-lg text-gray-400 cursor-not-allowed w-full" @click="() => alert('Only owner can access this page.')">
+                        <TableIcon class="text-gray-400"/>
+                        <span class="flex-1 mx-4 whitespace-nowrap">{{ __('Reports') }}</span>
+                    </button>
+                </li>
             </ul>
 
-            <ul v-else class="space-y-2 font-medium mb-4">
+            <ul v-else-if="$page.props.auth.user.roles.includes('employee')" class="space-y-2 font-medium mb-4">
                 <SidebarListItem :item-name="__('My Dashboard')" :hasBadge="false" link="dashboard.index"
                                  :active-links="['dashboard.index']">
                     <RocketIcon class="text-gray-500 dark:text-gray-100"/>

@@ -37,4 +37,13 @@ class RouteServiceProvider extends ServiceProvider
                 ->group(base_path('routes/web.php'));
         });
     }
+
+    public function authenticated($request, $user)
+    {
+        if ($user->hasRole('owner')) {
+            return redirect()->route('reports.index');
+        }
+        // Default: redirect to dashboard or other logic
+        return redirect(self::HOME);
+    }
 }

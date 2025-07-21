@@ -27,6 +27,7 @@ const props = defineProps({
     employee_stats: Object,
     attendance_status: Number,
     is_today_off: Boolean,
+    total_clients: Number,
 });
 const days_remaining = computed(() => {
     return daysUntilNthDayOfMonth(props.payroll_day);
@@ -163,6 +164,16 @@ onMounted(() => {
                         </div>
                     </Card>
 
+                    
+
+                    <Card class="w-full md:w-1/4 bg-gradient-to-r from-red-500 to-red-800">
+                        <h1 class="text-2xl text-white text-center font-semibold mb-4">{{ __('Your Clients') }}</h1>
+                        <div class="flex flex-col items-center justify-center h-full">
+                            <span class="text-7xl font-extrabold text-white">{{ total_clients }}</span>
+                            <span class="text-1xl text-center py-4 mb-4">{{ __('Total Clients You Brought') }}</span>
+                        </div>
+                    </Card>
+
                     <Card class="w-full md:w-1/4 " vl>
                         <h1 class="text-2xl text-center font-semibold mb-4">{{ __('Your Salary') }}</h1>
                         <div class="space-y-4">
@@ -174,7 +185,7 @@ onMounted(() => {
                     </Card>
                 </div>
 
-                <!-- PAYDAY + ATTENDANCE -->
+                <!-- MONTH DATA -->
                 <div class="flex flex-col md:flex-row justify-between md:gap-4">
 
                     <!-- PAY DAY -->

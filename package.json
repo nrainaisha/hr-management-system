@@ -19,6 +19,7 @@
     },
     "dependencies": {
         "@headlessui/vue": "^1.7.14",
+        "@inertiajs/inertia": "^0.11.1",
         "@vuepic/vue-datepicker": "^5.4.0",
         "@vueuse/core": "^10.2.1",
         "dayjs": "^1.11.9",
